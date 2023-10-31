@@ -267,6 +267,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
             infoMap.putInt("jobId", jobId);
             infoMap.putInt("statusCode", res.statusCode);
             infoMap.putDouble("bytesWritten", (double)res.bytesWritten);
+            infoMap.putMap("headers", res.headers);
 
             promise.resolve(infoMap);
           } else {

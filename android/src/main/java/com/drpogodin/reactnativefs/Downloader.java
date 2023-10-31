@@ -8,6 +8,8 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map;
+import java.util.HashMap;
 
 import android.util.Log;
 
@@ -142,6 +144,7 @@ public class Downloader extends AsyncTask<DownloadParams, long[], DownloadResult
 
         output.flush();
         res.bytesWritten = total;
+        res.headers = headersFlat;
       }
       res.statusCode = statusCode;
  } finally {
