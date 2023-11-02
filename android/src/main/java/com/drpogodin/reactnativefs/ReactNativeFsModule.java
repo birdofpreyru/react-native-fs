@@ -267,7 +267,7 @@ public class ReactNativeFsModule extends ReactNativeFsSpec {
             infoMap.putInt("jobId", jobId);
             infoMap.putInt("statusCode", res.statusCode);
             infoMap.putDouble("bytesWritten", (double)res.bytesWritten);
-            if(statusCode >= 200 && statusCode < 300){
+            if(res.statusCode >= 200 && res.statusCode < 300){
               // Create a WritableMap for the headers
               WritableMap headersMap = Arguments.createMap();
               for (Map.Entry<String, String> entry : res.headers.entrySet()) {
