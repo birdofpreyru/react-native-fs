@@ -140,8 +140,8 @@ export type StatResultT = {
   path: string; // The absolute path to the item
   size: number; // Size in bytes
   mode: number; // UNIX file mode
-  ctime: Date | number; // Created date
-  mtime: Date | number; // Last modified date
+  ctime: Date; // Created date
+  mtime: Date; // Last modified date
 
   // In case of content uri this is the pointed file path,
   // otherwise is the same as path.

@@ -560,6 +560,7 @@ export {
   type MkdirOptionsT,
   type ReadDirAssetsResItemT,
   type ReadDirResItemT,
+  type StatResultT,
   type StringMapT,
   type UploadBeginCallbackArgT,
   type UploadFileItemT,
