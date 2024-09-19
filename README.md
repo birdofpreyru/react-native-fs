@@ -1095,9 +1095,10 @@ function stopDownload(jobId: number): void;
 ```
 **VERIFIED:** Android, iOS.
 
-Aborts a file download job. The partial file will remain on the filesystem,
-and the promise returned from the aborted [downloadFile()] call will reject
-with an error.
+Aborts a file download job. The partial file will remain on the filesystem.
+If resume is not supported (Android), or if the `resumable` optional argument
+is not set when calling [downloadFile()], the promise returned from the aborted
+[downloadFile()] call will reject with an error.
 - `jobId` &mdash; **number** &mdash; Download job ID (see [downloadFile()]).
 
 ### stopUpload()
