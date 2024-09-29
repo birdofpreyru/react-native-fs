@@ -136,20 +136,37 @@ RCT_EXPORT_METHOD(stat:(NSString *)filepath
 
   @try {
     NSError *error = nil;
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
+    NSDictionary *attributes;
+    NSString *fileType;
+    NSNumber *fileMode;
 
-    if (error) return [[RNFSException fromError:error] reject:reject];
+    if (allowed) {
+      // Handle security-scoped resource
+      attributes = [url resourceValuesForKeys:@[NSURLCreationDateKey, NSURLContentModificationDateKey, NSURLFileSizeKey, NSURLFileAllocatedSizeKey, NSURLIsDirectoryKey, NSURLFileProtectionKey] error:&error];
+      if (error) return [[RNFSException fromError:error] reject:reject];
+      
+      fileType = [attributes[NSURLIsDirectoryKey] boolValue] ? NSFileTypeDirectory : NSFileTypeRegular;
+      // We can't get this information easily for security-scoped resources
+      fileMode = @(0);
+    } else {
+      // Handle regular (unscoped) resource
+      attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:&error];
+      if (error) return [[RNFSException fromError:error] reject:reject];
+      
+      fileType = [attributes objectForKey:NSFileType];
+      fileMode = @([[NSString stringWithFormat:@"%ld", (long)[(NSNumber *)[attributes objectForKey:NSFilePosixPermissions] integerValue]] integerValue]);
+    }
 
-    attributes = @{
-                   @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileCreationDate]],
-                   @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSFileModificationDate]],
-                   @"size": [attributes objectForKey:NSFileSize],
-                   @"type": [attributes objectForKey:NSFileType],
-                   @"mode": @([[NSString stringWithFormat:@"%ld", (long)[(NSNumber *)[attributes objectForKey:NSFilePosixPermissions] integerValue]] integerValue]),
-                   @"originalFilepath": @"NOT_SUPPORTED_ON_IOS"
-                   };
+    NSDictionary *result = @{
+      @"ctime": [self dateToTimeIntervalNumber:(NSDate *)(allowed ? attributes[NSURLCreationDateKey] : [attributes objectForKey:NSFileCreationDate])],
+      @"mtime": [self dateToTimeIntervalNumber:(NSDate *)(allowed ? attributes[NSURLContentModificationDateKey] : [attributes objectForKey:NSFileModificationDate])],
+      @"size": allowed ? attributes[NSURLFileSizeKey] : [attributes objectForKey:NSFileSize],
+      @"type": fileType,
+      @"mode": fileMode,
+      @"originalFilepath": filepath
+    };
 
-    resolve(attributes);
+    resolve(result);
   }
   @finally {
     if (allowed) [url stopAccessingSecurityScopedResource];
