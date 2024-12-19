@@ -9,6 +9,7 @@ import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.zip.GZIPInputStream
 
 class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
     private var mParam: DownloadParams? = null
@@ -70,7 +71,16 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                     }
                 }
                 mParam!!.onDownloadBegin?.onDownloadBegin(statusCode, lengthOfFile, headersFlat)
-                input = BufferedInputStream(connection.inputStream, 8 * 1024)
+
+                val contentEncoding = connection.getHeaderField("Content-Encoding")
+
+                input = if ("gzip".equals(contentEncoding, ignoreCase = true)) {
+                    Log.d("Downloader", "File compress with GZIP. Decompress...")
+                    GZIPInputStream(connection.inputStream)
+                } else {
+                    BufferedInputStream(connection.inputStream, 8 * 1024)
+                }          
+
                 output = FileOutputStream(param.dest)
                 val data = ByteArray(8 * 1024)
                 var total: Long = 0
