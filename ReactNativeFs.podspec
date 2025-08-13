@@ -18,6 +18,9 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,cpp}"
   s.private_header_files = "ios/**/*.h"
 
+  # Necessary for background downloads to work,
+  # see: https://github.com/birdofpreyru/react-native-fs/issues/114
+  s.public_header_files = "ios/RNFSBackgroundDownloads.h"
 
   install_modules_dependencies(s)
 end
