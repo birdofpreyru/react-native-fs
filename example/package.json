@@ -7,7 +7,7 @@
     "android:prod": "react-native run-android --mode release",
     "ios": "react-native run-ios",
     "start": "react-native start",
-    "windows": "@react-native-community/cli run-windows",
+    "windows": "npx @react-native-community/cli run-windows",
     "windows:autolink": "./node_modules/.bin/rnc-cli autolink-windows --sln \"windows\\ReactNativeFsExample.sln\" --proj \"windows\\ReactNativeFsExample\\ReactNativeFsExample.vcxproj\"",
     "build:android": "react-native build-android --extra-params \"--no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a\"",
     "build:ios": "react-native build-ios --mode Debug"
@@ -16,7 +16,8 @@
     "@dr.pogodin/react-native-static-server": "^0.22.0",
     "lodash": "^4.17.21",
     "react": "19.1.0",
-    "react-native": "0.80.2"
+    "react-native": "0.80.2",
+    "react-native-windows": "0.80.0-preview.2"
   },
   "devDependencies": {
     "@babel/core": "^7.28.0",
@@ -31,7 +32,8 @@
     "@types/lodash": "^4.17.20",
     "@types/react": "^19.1.10",
     "react-native-builder-bob": "^0.40.13",
-    "react-native-monorepo-config": "^0.1.9"
+    "react-native-monorepo-config": "^0.1.9",
+    "metro-config": "^0.82.4"
   },
   "engines": {
     "node": ">=18"
