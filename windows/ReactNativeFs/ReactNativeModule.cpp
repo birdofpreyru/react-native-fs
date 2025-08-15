@@ -806,17 +806,10 @@ winrt::fire_and_forget ReactNativeModule::uploadFiles(JSValueObject options, Rea
             winrt::hstring directoryPath, fileName;
             splitPath(wFilePath, directoryPath, fileName);
 
-            try
-            {
-                StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
-                StorageFile file{ co_await folder.GetFileAsync(fileName) };
-                auto fileProperties{ co_await file.GetBasicPropertiesAsync() };
-                totalUploadSize += fileProperties.Size();
-            }
-            catch (...)
-            {
-                continue;
-            }
+            StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
+            StorageFile file{ co_await folder.GetFileAsync(fileName) };
+            auto fileProperties{ co_await file.GetBasicPropertiesAsync() };
+            totalUploadSize += fileProperties.Size();
         }
         if (totalUploadSize <= 0)
         {
@@ -1033,10 +1026,14 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
 {
     try
     {
-        winrt::hstring boundary{ L"-----" };
-        std::string toUrl{ options["toUrl"].AsString() };
-        std::wstring URLForURI(toUrl.begin(), toUrl.end());
-        Uri uri{ URLForURI };
+        auto guid = winrt::to_hstring(winrt::Windows::Foundation::GuidHelper::CreateNewGuid());
+        std::wstring guidStr(guid.c_str());
+        if (!guidStr.empty() && guidStr.size() > 2) {
+          guidStr = guidStr.substr(1, guidStr.size() - 2); // remove first and last chars from {SOME_GUID}
+        }
+        auto boundary = L"----" + guidStr;
+
+        auto uri = winrt::Windows::Foundation::Uri(winrt::to_hstring(options["toUrl"].AsString()));
 
         winrt::Windows::Web::Http::HttpRequestMessage requestMessage{ httpMethod, uri };
         winrt::Windows::Web::Http::HttpMultipartFormDataContent requestContent{ boundary };
@@ -1051,15 +1048,14 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
             }
         }
 
-        auto const& fields{ options["fields"].AsObject() }; // placed in the header
-        std::stringstream attempt;
-        attempt << "form-data";
-        for (auto const& field : fields)
+        auto const& fields{ options["fields"].AsObject() };
+        for (auto const& kv : fields)
         {
-            attempt << "; " << field.first << "=" << field.second.AsString();
+          auto name = winrt::to_hstring(kv.first);
+          auto value = winrt::to_hstring(kv.second.AsString());
+          Windows::Web::Http::HttpStringContent part(value, Windows::Storage::Streams::UnicodeEncoding::Utf8);
+          requestContent.Add(part, name);
         }
-
-        requestContent.Headers().ContentDisposition(Headers::HttpContentDispositionHeaderValue::Parse(winrt::to_hstring(attempt.str())));
 
         m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadBegin",
             JSValueObject{
@@ -1078,29 +1074,22 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
             // Convert std::string to std::wstring
             std::wstring wFilePath = winrt::to_hstring(filePath).c_str();
 
-            try
-            {
-                winrt::hstring directoryPath, fileName;
-                splitPath(wFilePath, directoryPath, fileName);
-                StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
-                StorageFile file{ co_await folder.GetFileAsync(fileName) };
-                auto properties{ co_await file.GetBasicPropertiesAsync() };
+            winrt::hstring directoryPath, fileName;
+            splitPath(wFilePath, directoryPath, fileName);
+            StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
+            StorageFile file{ co_await folder.GetFileAsync(fileName) };
+            auto properties{ co_await file.GetBasicPropertiesAsync() };
 
-                HttpBufferContent entry{ co_await FileIO::ReadBufferAsync(file) };
-                requestContent.Add(entry, name, filename);
+            HttpBufferContent entry{ co_await FileIO::ReadBufferAsync(file) };
+            requestContent.Add(entry, name, filename);
 
-                totalUploaded += properties.Size();
-                m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
-                    JSValueObject{
-                        { "jobId", jobId },
-                        { "totalBytesExpectedToSend", totalUploadSize },   // The total number of bytes that will be sent to the server
-                        { "totalBytesSent", totalUploaded },
-                    });
-            }
-            catch (...)
-            {
-                continue;
-            }
+            totalUploaded += properties.Size();
+            m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
+                JSValueObject{
+                    { "jobId", jobId },
+                    { "totalBytesExpectedToSend", totalUploadSize },   // The total number of bytes that will be sent to the server
+                    { "totalBytesSent", totalUploaded },
+                });
         }
 
         requestMessage.Content(requestContent);

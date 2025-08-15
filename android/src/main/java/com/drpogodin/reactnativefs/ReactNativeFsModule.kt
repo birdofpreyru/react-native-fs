@@ -11,6 +11,7 @@ import android.os.Environment
 import android.os.StatFs
 import android.provider.MediaStore
 import android.util.Base64
+import android.util.Base64OutputStream
 import android.util.SparseArray
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
@@ -52,7 +53,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     private var pickFileLauncher: ActivityResultLauncher<Array<String>>? = null
     private fun getPickFileLauncher(): ActivityResultLauncher<Array<String>> {
         if (pickFileLauncher == null) {
-            val registry = (currentActivity as ReactActivity).activityResultRegistry
+            val registry = (reactApplicationContext.currentActivity as ReactActivity).activityResultRegistry
             pickFileLauncher = registry.register<Array<String>, Uri?>(
                     "RNFS_pickFile",
                     OpenDocument()
@@ -580,9 +581,14 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     override fun readFile(filepath: String, promise: Promise) {
         try {
             getInputStream(filepath).use { inputStream ->
-                val inputData = getInputStreamBytes(inputStream)
-                val base64Content = Base64.encodeToString(inputData, Base64.NO_WRAP)
-                promise.resolve(base64Content)
+                ByteArrayOutputStream().use { outputStream ->
+                    Base64OutputStream(outputStream, Base64.NO_WRAP).use { base64FilterStream ->
+                        inputStream.copyTo(base64FilterStream)
+                    }
+
+                    val base64Content = outputStream.toString()
+                    promise.resolve(base64Content)
+                }
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
