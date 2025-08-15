@@ -14,6 +14,7 @@ import java.nio.channels.Channels
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.ceil
+import java.util.UUID
 
 class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
     private var mParams: UploadParams? = null
@@ -42,8 +43,8 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
         var request: DataOutputStream? = null
         val crlf = "\r\n"
         val twoHyphens = "--"
-        val boundary = "*****"
-        val tail = crlf + twoHyphens + boundary + twoHyphens + crlf
+        val boundary = "----" + UUID.randomUUID().toString().replace("-", "")
+        val tail = twoHyphens + boundary + twoHyphens + crlf
         var metaData = ""
         var stringData = ""
         val fileHeader: Array<String?>
@@ -91,7 +92,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
                 "Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"" + crlf +
                 "Content-Type: " + filetype + crlf
               if (files.size - 1 == fileCount) {
-                totalFileLength += tail.length.toLong()
+                totalFileLength += tail.toByteArray().size
               }
               val fileLengthHeader = "Content-length: $fileLength$crlf"
               fileHeader[fileCount] = fileHeaderType + fileLengthHeader + crlf
@@ -103,7 +104,7 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
           mParams!!.onUploadBegin?.onUploadBegin()
           if (!binaryStreamOnly) {
             var requestLength = totalFileLength
-            requestLength += (stringData.length + files.size * crlf.length).toLong()
+            requestLength += stringData.toByteArray().size + files.size * crlf.toByteArray().size
             connection.setRequestProperty("Content-length", "" + requestLength.toInt())
             connection.setFixedLengthStreamingMode(requestLength.toInt())
           }
@@ -180,9 +181,12 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
 
     private fun getMimeType(path: String?): String {
         var type: String? = null
-        val extension = MimeTypeMap.getFileExtensionFromUrl(path)
+        var extension = path?.substringAfterLast('.', "")
         if (extension != null) {
-            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.lowercase(Locale.getDefault()))
+            extension = extension.lowercase(Locale.getDefault())
+            if (extension.isNotEmpty()) {
+                type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+            }
         }
         if (type == null) {
             type = "*/*"

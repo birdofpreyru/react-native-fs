@@ -10,15 +10,18 @@ import type { TestMethods } from '../TestTypes';
 import { notPlatform, Result, tryUnlink } from '../TestUtils';
 import { CONTENT, PATH } from '../TestValues';
 
-const UPLOAD_FILES_CONTROL_ANDROID = `--*****
+const UPLOAD_FILES_CONTROL_ANDROID = `boundary
+Content-Disposition: form-data; name="a"
+
+mock value
+boundary
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
 Content-Type: text/plain
 Content-length: 8
 
 GÖÖÐ
 
-
---*****--
+boundary
 `;
 
 const UPLOAD_FILES_CONTROL_IOS = `Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"
@@ -29,12 +32,19 @@ GÖÖÐ
 
 `;
 
-const UPLOAD_FILES_CONTROL_WINDOWS = `-------
+const UPLOAD_FILES_CONTROL_WINDOWS = `boundary
+Content-Length: 10
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: form-data; name="a"
+
+mock value
+boundary
 Content-Length: 8
 Content-Disposition: form-data; name="upload-files-source-file"; filename="upload-files-source-file.txt"; filename*=UTF-8''upload-files-source-file.txt
 
 GÖÖÐ
 
+boundary
 `;
 
 // TODO: Why these messages are different I am not sure. Perhaps WebDAV module
@@ -62,10 +72,19 @@ export const uploadTests: TestMethods = {
 
       await tryUnlink(targetDevicePath);
 
+      const fields = Platform.select({
+        ios: undefined,
+        macos: undefined,
+        default: {
+          a: 'mock value',
+        },
+      });
+
       // execute
       const res = uploadFiles({
         toUrl: `${server?.origin!}/dav/${uploadFileName}`,
         method: 'PUT',
+        fields,
         files: [
           {
             name: 'upload-files-source-file',
@@ -80,11 +99,16 @@ export const uploadTests: TestMethods = {
       uploadedFile = uploadedFile.replace(/\r\n/g, '\n');
 
       // test
+      if (Platform.OS === 'windows' || Platform.OS === 'android') {
+        uploadedFile = uploadedFile.replace(/-{4,}[a-f0-9-]+/g, 'boundary'); // replace random boundary with "boundary"
+      }
       if (uploadedFile !== UPLOAD_FILES_CONTROL) {
         console.log(
           'MISMATCH:\nUploaded:\n',
           uploadedFile,
-          '\nExpected:\n', UPLOAD_FILES_CONTROL);
+          '\nExpected:\n',
+          UPLOAD_FILES_CONTROL
+        );
       }
 
       return uploadedFile.includes(UPLOAD_FILES_CONTROL)
