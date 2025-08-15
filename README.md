@@ -24,6 +24,10 @@ Mac (Catalyst), and Windows platforms.
 [<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
 
 ### [Contributors](https://github.com/birdofpreyru/react-native-fs/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/54746036?v=4&s=36" />](https://github.com/tero-paananen)
+[<img width=36 src="https://avatars.githubusercontent.com/u/7615817?v=4&s=36" />](https://github.com/Alatius)
+[<img width=36 src="https://avatars.githubusercontent.com/u/20155143?v=4&s=36" />](https://github.com/euphbriggs)
+[<img width=36 src="https://avatars.githubusercontent.com/u/11278140?v=4&s=36" />](https://github.com/a-ghorbani)
 [<img width=36 src="https://avatars.githubusercontent.com/u/11723093?v=4&s=36" />](https://github.com/Bengejd)
 [<img width=36 src="https://avatars.githubusercontent.com/u/48058861?v=4&s=36" />](https://github.com/meza-jhonathan)
 [<img width=36 src="https://avatars.githubusercontent.com/u/62384153?v=4&s=36" />](https://github.com/pcprinz)
@@ -1108,9 +1112,10 @@ function stopDownload(jobId: number): void;
 ```
 **VERIFIED:** Android, iOS.
 
-Aborts a file download job. The partial file will remain on the filesystem,
-and the promise returned from the aborted [downloadFile()] call will reject
-with an error.
+Aborts a file download job. The partial file will remain on the filesystem.
+If resume is not supported (Android), or if the `resumable` optional argument
+is not set when calling [downloadFile()], the promise returned from the aborted
+[downloadFile()] call will reject with an error.
 - `jobId` &mdash; **number** &mdash; Download job ID (see [downloadFile()]).
 
 ### stopUpload()

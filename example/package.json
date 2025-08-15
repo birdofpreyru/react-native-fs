@@ -13,16 +13,16 @@
     "build:ios": "react-native build-ios --mode Debug"
   },
   "dependencies": {
-    "@dr.pogodin/react-native-static-server": "^0.22.0",
+    "@dr.pogodin/react-native-static-server": "^0.22.1",
     "lodash": "^4.17.21",
     "react": "19.1.0",
     "react-native": "0.80.2",
     "react-native-windows": "0.80.0-preview.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.0",
-    "@babel/preset-env": "^7.28.0",
-    "@babel/runtime": "^7.28.2",
+    "@babel/core": "^7.28.3",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/runtime": "^7.28.3",
     "@react-native-community/cli": "19.1.1",
     "@react-native-community/cli-platform-android": "19.1.1",
     "@react-native-community/cli-platform-ios": "19.1.1",
