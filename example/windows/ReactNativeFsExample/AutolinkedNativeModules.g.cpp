@@ -3,12 +3,21 @@
 #include "pch.h"
 #include "AutolinkedNativeModules.g.h"
 
+// Includes from @dr.pogodin/react-native-fs
+#include <winrt/ReactNativeFs.h>
+
+// Includes from @dr.pogodin/react-native-static-server
+#include <winrt/ReactNativeStaticServer.h>
+
 namespace winrt::Microsoft::ReactNative
 {
 
 void RegisterAutolinkedNativeModulePackages(winrt::Windows::Foundation::Collections::IVector<winrt::Microsoft::ReactNative::IReactPackageProvider> const& packageProviders)
 { 
-    UNREFERENCED_PARAMETER(packageProviders);
+    // IReactPackageProviders from @dr.pogodin/react-native-fs
+    packageProviders.Append(winrt::ReactNativeFs::ReactPackageProvider());
+    // IReactPackageProviders from @dr.pogodin/react-native-static-server
+    packageProviders.Append(winrt::ReactNativeStaticServer::ReactPackageProvider());
 }
 
 }
