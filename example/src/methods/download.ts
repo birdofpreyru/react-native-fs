@@ -86,7 +86,7 @@ export const downloadTests: TestMethods = {
 
     // prepare
     const url =
-      'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/good-utf8.txt';
+      'https://raw.githubusercontent.com/birdofpreyru/react-native-fs/master/example/assets/test/gööd-utf8.txt';
     const path = PATH('downloadFile-3');
     await tryUnlink(path);
 
@@ -109,6 +109,10 @@ export const downloadTests: TestMethods = {
 
               if (typeof jobId !== 'number') {
                 resolve(Result.error(`type ${typeof jobId} !== number`));
+                return;
+              }
+              if (res.statusCode !== 200) {
+                resolve(Result.error(`Download failed with status code ${res.statusCode} (expected 200)`));
                 return;
               }
               if (res.bytesWritten !== 8) {
