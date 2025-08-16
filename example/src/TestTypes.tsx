@@ -1,4 +1,3 @@
-
 export interface ErrorStatus {
   type: 'error';
   message?: string;
@@ -15,10 +14,15 @@ export interface NotAvailableStatus {
   message: string;
 }
 
-export type Status = ErrorStatus | SuccessStatus | PendingStatus | NotAvailableStatus;
+export type Status =
+  | ErrorStatus
+  | SuccessStatus
+  | PendingStatus
+  | NotAvailableStatus;
 
-export type StatusOrEvaluator = Status |
-  (() => Status) |
-  (() => Promise<Status>);
+export type StatusOrEvaluator =
+  | Status
+  | (() => Status)
+  | (() => Promise<Status>);
 
-export type TestMethods = { [name: string]: StatusOrEvaluator; };
+export type TestMethods = { [name: string]: StatusOrEvaluator };

@@ -10,9 +10,9 @@ export const getAllExternalFilesDirsTests: TestMethods = {
 
       try {
         const res = await getAllExternalFilesDirs();
-        if (!Array.isArray(res) || res.some((x) => typeof x !== 'string')) {
+        if (!Array.isArray(res) || res.some(x => typeof x !== 'string')) {
           return Result.error(
-            `result is not a string[]: ${JSON.stringify(res)}`
+            `result is not a string[]: ${JSON.stringify(res)}`,
           );
         }
         return Result.success();

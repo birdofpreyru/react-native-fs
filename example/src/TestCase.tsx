@@ -17,14 +17,17 @@ export default function TestCase({ name, status }: Readonly<TestCaseProps>) {
       setStatusState(status);
     } else {
       (async () => {
-        setStatusState(Result.pending(),);
+        setStatusState(Result.pending());
         const res = await status();
         setStatusState(res);
       })();
     }
   }, [status]);
 
-  const msg = React.useMemo(() => 'message' in statusState ? statusState.message : undefined, [statusState]);
+  const msg = React.useMemo(
+    () => ('message' in statusState ? statusState.message : undefined),
+    [statusState],
+  );
 
   return (
     <View style={[styles.container, styles[statusState.type]]}>
@@ -54,5 +57,3 @@ const styles = StyleSheet.create({
     backgroundColor: 'gray',
   },
 });
-
-

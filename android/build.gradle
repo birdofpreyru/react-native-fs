@@ -75,9 +75,3 @@ dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
-
-react {
-  jsRootDir = file("../src/")
-  libraryName = "ReactNativeFs"
-  codegenJavaPackageName = "com.drpogodin.reactnativefs"
-}

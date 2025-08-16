@@ -107,14 +107,14 @@ export const uploadTests: TestMethods = {
           'MISMATCH:\nUploaded:\n',
           uploadedFile,
           '\nExpected:\n',
-          UPLOAD_FILES_CONTROL
+          UPLOAD_FILES_CONTROL,
         );
       }
 
       return uploadedFile.includes(UPLOAD_FILES_CONTROL)
         ? Result.success()
         : Result.error(
-            `uploadedFile does not include UPLOAD_FILES_CONTROL(${UPLOAD_FILES_CONTROL})`
+            `uploadedFile does not include UPLOAD_FILES_CONTROL(${UPLOAD_FILES_CONTROL})`,
           );
     } catch (e) {
       return Result.catch(e);

@@ -1,6 +1,6 @@
 {
   "name": "@dr.pogodin/react-native-fs",
-  "version": "2.34.2",
+  "version": "2.35.0",
   "description": "Native filesystem access for React Native",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
@@ -13,14 +13,12 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "codegen-windows": "./node_modules/.bin/rnc-cli codegen-windows",
     "example": "yarn workspace @dr.pogodin/react-native-fs-example",
     "test": "yarn lint && yarn typecheck",
     "typecheck": "tsc",
-    "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "lint": "eslint",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "prepare": "bob build",
-    "windows": "@react-native-community/cli run-windows"
+    "prepare": "bob build"
   },
   "keywords": [
     "react-native",
@@ -59,17 +57,20 @@
     "@eslint/compat": "^1.3.2",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.33.0",
-    "@react-native-community/cli": "19.1.1",
-    "@react-native/babel-preset": "0.80.2",
-    "@react-native/eslint-config": "^0.80.2",
-    "@react-native/typescript-config": "^0.80.2",
+    "@react-native-community/cli": "20.0.0",
+    "@react-native/babel-preset": "0.81.0",
+    "@react-native/eslint-config": "^0.81.0",
+    "@react-native/typescript-config": "^0.81.0",
     "@types/jest": "^30.0.0",
     "@types/react": "^19.1.10",
     "del-cli": "^6.0.0",
     "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.0.5",
+    "prettier": "^3.6.2",
     "react": "19.1.0",
-    "react-native": "0.80.2",
+    "react-native": "0.81.0",
     "react-native-builder-bob": "^0.40.13",
     "typescript": "^5.9.2"
   },
@@ -117,7 +118,7 @@
   "create-react-native-library": {
     "languages": "kotlin-objc",
     "type": "turbo-module",
-    "version": "0.51.1"
+    "version": "0.52.1"
   },
   "react-native-windows": {
     "init-windows": {

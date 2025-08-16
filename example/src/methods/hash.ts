@@ -9,8 +9,9 @@ export const hashTests: TestMethods = {
     const path = PATH('hash');
     await tryUnlink(path);
     try {
-      if (await exists(path))
-        {return Result.error(`file should not exist yet: ${path}`);}
+      if (await exists(path)) {
+        return Result.error(`file should not exist yet: ${path}`);
+      }
       await writeFile(path, 'xxx');
       if ((await hash(path, 'md5')) !== 'f561aaf6ef0bf14d4208bb46a4ccb3ad') {
         return Result.error(`md5 hash mismatch: ${path}`);

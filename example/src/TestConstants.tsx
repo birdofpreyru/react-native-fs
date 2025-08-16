@@ -7,7 +7,7 @@ import { isString } from 'lodash';
 
 const RNFS = require('@dr.pogodin/react-native-fs');
 
-const constants: { pathKey: string, platforms?: PlatformOSType[]; }[] = [
+const constants: { pathKey: string; platforms?: PlatformOSType[] }[] = [
   { pathKey: 'CachesDirectoryPath' },
   { pathKey: 'DocumentDirectoryPath' }, //! this is wrong on windows => LocalState
   { pathKey: 'DownloadDirectoryPath', platforms: ['android', 'windows'] },
@@ -34,7 +34,11 @@ export default function TestConstants() {
         const valid = isString(path) && path.length > 0;
 
         if (platforms && !platforms.includes(Platform.OS)) {
-          status = !valid ? Result.notAvailable(...platforms) : Result.error(`${pathKey} (${path}) should not be available on ${Platform.OS} but [${platforms.join(', ')}]`);
+          status = !valid
+            ? Result.notAvailable(...platforms)
+            : Result.error(
+                `${pathKey} (${path}) should not be available on ${Platform.OS} but [${platforms.join(', ')}]`,
+              );
         } else if (!valid) {
           status = Result.error(`${pathKey} is not defined!`);
         } else {

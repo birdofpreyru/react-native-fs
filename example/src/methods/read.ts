@@ -44,12 +44,14 @@ export const readTests: TestMethods = {
 
       // test
       let res = await read(path);
-      if (res !== expected)
-        {return Result.error(`Platform dependent: ${res} !== ${expected}`);}
+      if (res !== expected) {
+        return Result.error(`Platform dependent: ${res} !== ${expected}`);
+      }
 
       res = await read(path, 8);
-      if (res !== CONTENT)
-        {return Result.error(`read(8): ${res} !== ${CONTENT}`);}
+      if (res !== CONTENT) {
+        return Result.error(`read(8): ${res} !== ${CONTENT}`);
+      }
 
       res = await read(path, 5);
       if (res !== 'GÖÖ') return Result.error(`read(5): ${res} !== GÖÖ`);
@@ -60,12 +62,14 @@ export const readTests: TestMethods = {
       if (res !== 'ÖÖ') return Result.error(`read(4, 1): ${res} !== ÖÖ`);
 
       res = await read(path, 2, 1, 'ascii');
-      if (res !== '\xC3\x96')
-        {return Result.error('read(2, 1, ascii): ${res} !== Ö');}
+      if (res !== '\xC3\x96') {
+        return Result.error('read(2, 1, ascii): ${res} !== Ö');
+      }
 
       res = await read(path, 2, 1, 'base64');
-      if (res !== 'w5Y=')
-        {return Result.error('read(2, 1, base64): ${res} !== w5Y=');}
+      if (res !== 'w5Y=') {
+        return Result.error('read(2, 1, base64): ${res} !== w5Y=');
+      }
 
       return Result.success();
     } catch (e) {
@@ -106,7 +110,8 @@ export const readTests: TestMethods = {
       // }
 
       // This is the test that we can use now:
-      if (dir.length !== expected.length) return Result.error('Result length mismatch');
+      if (dir.length !== expected.length)
+        return Result.error('Result length mismatch');
       for (const exp of expected) {
         if (!dir.includes(exp)) {
           return Result.error(`${exp} not found in ${JSON.stringify(dir)}`);
@@ -186,11 +191,12 @@ export const readTests: TestMethods = {
 
         for (let i = 0; i < assets.length; ++i) {
           const a = assets[i];
-          if (a?.isDirectory() || !a?.isFile())
-            {return Result.error(`Item ${i} is not a file`);}
+          if (a?.isDirectory() || !a?.isFile()) {
+            return Result.error(`Item ${i} is not a file`);
+          }
         }
 
-        const assets2 = assets.map((asset) => ({
+        const assets2 = assets.map(asset => ({
           name: asset.name,
           path: asset.path,
           size: asset.size,
@@ -211,14 +217,15 @@ export const readTests: TestMethods = {
           ])
         ) {
           return Result.error(
-            `Assets do not match the expected list: ${JSON.stringify(assets2)}`
+            `Assets do not match the expected list: ${JSON.stringify(assets2)}`,
           );
         }
 
         assets = await readDirAssets('');
-        const asset = assets.find((a) => a.name === 'test');
-        if (!asset?.isDirectory() || asset?.isFile())
-          {return Result.error('test asset is not a directory');}
+        const asset = assets.find(a => a.name === 'test');
+        if (!asset?.isDirectory() || asset?.isFile()) {
+          return Result.error('test asset is not a directory');
+        }
 
         return Result.success();
       } catch (e) {
@@ -261,27 +268,32 @@ export const readTests: TestMethods = {
       if (notPlatform('android')) return Result.notAvailable('android');
       try {
         let res = await readFileAssets(TEST_ASSET_LATIN1_PATH, 'ascii');
-        if (res !== CONTENT)
-          {return Result.error(`ascii: ${res} !== ${CONTENT}`);}
+        if (res !== CONTENT) {
+          return Result.error(`ascii: ${res} !== ${CONTENT}`);
+        }
 
         res = await readFileAssets(TEST_ASSET_UFT8_PATH, 'ascii');
-        if (res !== '\x47\xC3\x96\xC3\x96\xC3\x90\x0A')
-          {return Result.error(`ascii: ${res} !== ${CONTENT}`);}
+        if (res !== '\x47\xC3\x96\xC3\x96\xC3\x90\x0A') {
+          return Result.error(`ascii: ${res} !== ${CONTENT}`);
+        }
 
         res = await readFileAssets(TEST_ASSET_UFT8_PATH, 'utf8');
         if (res !== CONTENT) return Result.error(`utf8: ${res} !== ${CONTENT}`);
 
         res = await readFileAssets(TEST_ASSET_UFT8_PATH);
-        if (res !== CONTENT)
-          {return Result.error(`default: ${res} !== ${CONTENT}`);}
+        if (res !== CONTENT) {
+          return Result.error(`default: ${res} !== ${CONTENT}`);
+        }
 
         res = await readFileAssets(TEST_ASSET_LATIN1_PATH, 'base64');
-        if (res !== 'R9bW0Ao=')
-          {return Result.error(`base64: ${res} !== R9bW0Ao=`);}
+        if (res !== 'R9bW0Ao=') {
+          return Result.error(`base64: ${res} !== R9bW0Ao=`);
+        }
 
         res = await readFileAssets(TEST_ASSET_UFT8_PATH, 'base64');
-        if (res !== 'R8OWw5bDkAo=')
-          {return Result.error(`base64: ${res} !== R8OWw5bDkAo=`);}
+        if (res !== 'R8OWw5bDkAo=') {
+          return Result.error(`base64: ${res} !== R8OWw5bDkAo=`);
+        }
 
         return Result.success();
       } catch (e) {
@@ -295,23 +307,27 @@ export const readTests: TestMethods = {
       if (res !== CONTENT) return Result.error(`ascii: ${res} !== ${CONTENT}`);
 
       res = await readFileRes('good_utf8.txt', 'ascii');
-      if (res !== '\x47\xC3\x96\xC3\x96\xC3\x90\x0A')
-        {return Result.error(`ascii: ${res} !== ${CONTENT}`);}
+      if (res !== '\x47\xC3\x96\xC3\x96\xC3\x90\x0A') {
+        return Result.error(`ascii: ${res} !== ${CONTENT}`);
+      }
 
       res = await readFileRes('good_utf8.txt', 'utf8');
       if (res !== CONTENT) return Result.error(`utf8: ${res} !== ${CONTENT}`);
 
       res = await readFileRes('good_utf8.txt');
-      if (res !== CONTENT)
-        {return Result.error(`default: ${res} !== ${CONTENT}`);}
+      if (res !== CONTENT) {
+        return Result.error(`default: ${res} !== ${CONTENT}`);
+      }
 
       res = await readFileRes('good_latin1.txt', 'base64');
-      if (res !== 'R9bW0Ao=')
-        {return Result.error(`base64: ${res} !== R9bW0Ao=`);}
+      if (res !== 'R9bW0Ao=') {
+        return Result.error(`base64: ${res} !== R9bW0Ao=`);
+      }
 
       res = await readFileRes('good_utf8.txt', 'base64');
-      if (res !== 'R8OWw5bDkAo=')
-        {return Result.error(`base64: ${res} !== R8OWw5bDkAo=`);}
+      if (res !== 'R8OWw5bDkAo=') {
+        return Result.error(`base64: ${res} !== R8OWw5bDkAo=`);
+      }
 
       return Result.success();
     } catch (e) {
@@ -329,37 +345,41 @@ type ExpectedType = {
 };
 function verifyItem(
   given: ReadDirResItemT | undefined,
-  expected: ExpectedType
+  expected: ExpectedType,
 ): string {
   if (!given) return 'Item is undefined';
-  if (given.name !== expected.name)
-    {return `incorrect name ${given.name.normalize()} !== ${expected.name.normalize()}`;}
-  if (given.path !== expected.path)
-    {return `incorrect path ${given.path.normalize()} !== ${expected.path.normalize()}`;}
+  if (given.name !== expected.name) {
+    return `incorrect name ${given.name.normalize()} !== ${expected.name.normalize()}`;
+  }
+  if (given.path !== expected.path) {
+    return `incorrect path ${given.path.normalize()} !== ${expected.path.normalize()}`;
+  }
   if (expected.type === 'file' && !given.isFile()) return 'not a file';
   if (expected.type === 'folder' && !given.isDirectory()) return 'not a folder';
 
   // ctime
   if (Platform.OS === 'android') {
-    if (given.ctime !== null)return 'ctime is not null for Android';
+    if (given.ctime !== null) return 'ctime is not null for Android';
   } else if (!(given.ctime instanceof Date)) return 'ctime is not a Date';
   else if (
     given.ctime.valueOf() < expected.now - 1000 ||
     given.ctime.valueOf() > expected.now + 1000
-  )
-    {return `ctime is not within the expected range: ${given.ctime.valueOf()} !== ${
+  ) {
+    return `ctime is not within the expected range: ${given.ctime.valueOf()} !== ${
       expected.now
-    }`;}
+    }`;
+  }
 
   // mtime
   if (!(given.mtime instanceof Date)) return 'mtime is not a Date';
   if (
     given.mtime.valueOf() < expected.now - 1000 ||
     given.mtime.valueOf() > expected.now + 1000
-  )
-    {return `mtime is not within the expected range: ${given.mtime.valueOf()} !== ${
+  ) {
+    return `mtime is not within the expected range: ${given.mtime.valueOf()} !== ${
       expected.now
-    }`;}
+    }`;
+  }
 
   const expectedSize =
     expected.size ??
@@ -368,7 +388,8 @@ function verifyItem(
       windows: 0,
       default: 64,
     });
-  if (given.size !== expectedSize)
-    {return `size is not the expected value: ${given.size} !== ${expectedSize}`;}
+  if (given.size !== expectedSize) {
+    return `size is not the expected value: ${given.size} !== ${expectedSize}`;
+  }
   return '';
 }

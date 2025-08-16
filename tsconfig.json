@@ -1,5 +1,7 @@
 {
   "extends": "@react-native/typescript-config",
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["**/node_modules", "**/Pods"],
   "compilerOptions": {
     // TODO: For now it is disabled, as it leads to a bunch of errors
     // in the internal RN modules... perhaps because we import stuff we

@@ -1,6 +1,5 @@
 import { Text, View } from 'react-native';
 
-
 import TestCase from './TestCase';
 import { type StatusOrEvaluator } from './TestTypes';
 
@@ -23,10 +22,7 @@ import { uploadTests } from './methods/upload';
 import { writeTests } from './methods/write';
 import styles from './styles';
 
-
-
-
-const tests: { [name: string]: StatusOrEvaluator; } = {
+const tests: { [name: string]: StatusOrEvaluator } = {
   ...appendTests,
   ...copyTests,
   ...downloadTests,
