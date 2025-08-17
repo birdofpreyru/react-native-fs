@@ -13,6 +13,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "codegen-windows": "./node_modules/.bin/rnc-cli codegen-windows",
     "example": "yarn workspace @dr.pogodin/react-native-fs-example",
     "test": "yarn lint && yarn typecheck",
     "typecheck": "tsc",
