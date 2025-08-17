@@ -58,7 +58,7 @@ export type PickFileOptionsT = {
   /** **[Windows]** The file extensions to pick from.
    * - Only applies to `pickerType !== 'folder'`
    * - Defaults to `[]` (all file extensions) */
-  fileExtensions: FileExtension[]
+  fileExtensions: FileExtension[];
 };
 
 export type DownloadFileOptionsT = {

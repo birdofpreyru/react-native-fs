@@ -26,8 +26,9 @@ export const writeTests: TestMethods = {
 
       // test 2
       res = await readFile(file);
-      if (res !== `${CONTENT}${CONTENT}`)
-        {return Result.error(`${res} !== ${CONTENT}${CONTENT}`);}
+      if (res !== `${CONTENT}${CONTENT}`) {
+        return Result.error(`${res} !== ${CONTENT}${CONTENT}`);
+      }
 
       return Result.success();
     } catch (e) {
@@ -47,8 +48,9 @@ export const writeTests: TestMethods = {
       let res = await readFile(file);
       if (res !== CONTENT) return Result.error(`${res} !== ${CONTENT}`);
       res = await readFile(file, 'ascii');
-      if (res !== CONTENT_UTF8)
-        {return Result.error(`${res} !== ${CONTENT_UTF8}`);}
+      if (res !== CONTENT_UTF8) {
+        return Result.error(`${res} !== ${CONTENT_UTF8}`);
+      }
 
       // execute 2
       await writeFile(file, CONTENT);

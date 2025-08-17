@@ -17,12 +17,12 @@ export const touchTests: TestMethods = {
 
       if (a.ctime.valueOf() !== b.ctime.valueOf()) {
         return Result.error(
-          `a.ctime: ${a.ctime.valueOf()} !== b.ctime: ${b.ctime.valueOf()}`
+          `a.ctime: ${a.ctime.valueOf()} !== b.ctime: ${b.ctime.valueOf()}`,
         );
       }
       if (a.mtime.valueOf() !== b.mtime.valueOf()) {
         return Result.error(
-          `a.mtime: ${a.mtime.valueOf()} !== b.mtime: ${b.mtime.valueOf()}`
+          `a.mtime: ${a.mtime.valueOf()} !== b.mtime: ${b.mtime.valueOf()}`,
         );
       }
       const newTime = 1705969300000;
@@ -34,12 +34,12 @@ export const touchTests: TestMethods = {
       const c = await stat(filePath);
       if (c.ctime.valueOf() !== newTime) {
         return Result.error(
-          `c.ctime ${c.ctime.valueOf()} !== M_TIME ${newTime}`
+          `c.ctime ${c.ctime.valueOf()} !== M_TIME ${newTime}`,
         );
       }
       if (c.mtime.valueOf() !== newTime) {
         return Result.error(
-          `c.mtime ${c.mtime.valueOf()} !== M_TIME ${newTime}`
+          `c.mtime ${c.mtime.valueOf()} !== M_TIME ${newTime}`,
         );
       }
       return Result.success();

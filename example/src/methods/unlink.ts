@@ -16,13 +16,15 @@ export const unlinkTests: TestMethods = {
         // execute AND test
         if (!(await exists(filePath))) return Result.error('file should exist');
         await unlink(filePath);
-        if (await exists(filePath))
-          {return Result.error('file should not exist');}
+        if (await exists(filePath)) {
+          return Result.error('file should not exist');
+        }
         await writeFile(filePath, 'xxx');
         if (!(await exists(filePath))) return Result.error('file should exist');
         await unlink(dirPath);
-        if (await exists(filePath))
-          {return Result.error('file should not exist');}
+        if (await exists(filePath)) {
+          return Result.error('file should not exist');
+        }
         try {
           await unlink(dirPath);
           return Result.error('unlink() should fail');

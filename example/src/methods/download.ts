@@ -37,12 +37,15 @@ export const downloadTests: TestMethods = {
       const res = await promise;
 
       // test
-      if (typeof jobId !== 'number')
-        {return Result.error(`type ${typeof jobId} !== number`);}
-      if (res.bytesWritten !== 8)
-        {return Result.error(`bytesWritten ${res.bytesWritten} !== 8`);}
-      if (res.statusCode !== 200)
-        {return Result.error(`statusCode ${res.statusCode} !== 200`);}
+      if (typeof jobId !== 'number') {
+        return Result.error(`type ${typeof jobId} !== number`);
+      }
+      if (res.bytesWritten !== 8) {
+        return Result.error(`bytesWritten ${res.bytesWritten} !== 8`);
+      }
+      if (res.statusCode !== 200) {
+        return Result.error(`statusCode ${res.statusCode} !== 200`);
+      }
 
       const file = await readFile(path);
       if (file !== CONTENT) return Result.error(`${file} !== ${CONTENT}`);
@@ -60,10 +63,10 @@ export const downloadTests: TestMethods = {
       await tryUnlink(path);
 
       // execute AND test
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         const timeoutId = setTimeout(
           () => resolve(Result.error('timeout reached')),
-          3000
+          3000,
         );
 
         const { jobId } = downloadFile({
@@ -93,11 +96,11 @@ export const downloadTests: TestMethods = {
     // execute AND test
     try {
       console.info(
-        'Send the app to background to run the iOS background download test'
+        'Send the app to background to run the iOS background download test',
       );
       const promise = new Promise<{ type: 'error' } | { type: 'success' }>(
-        (resolve) => {
-          const sub = AppState.addEventListener('change', async (state) => {
+        resolve => {
+          const sub = AppState.addEventListener('change', async state => {
             if (state === 'background') {
               const { jobId, promise: downloadPromise } = downloadFile({
                 fromUrl: url,
@@ -112,7 +115,11 @@ export const downloadTests: TestMethods = {
                 return;
               }
               if (res.statusCode !== 200) {
-                resolve(Result.error(`Download failed with status code ${res.statusCode} (expected 200)`));
+                resolve(
+                  Result.error(
+                    `Download failed with status code ${res.statusCode} (expected 200)`,
+                  ),
+                );
                 return;
               }
               if (res.bytesWritten !== 8) {
@@ -132,7 +139,7 @@ export const downloadTests: TestMethods = {
               resolve(Result.success());
             }
           });
-        }
+        },
       );
       return promise;
     } catch (e) {

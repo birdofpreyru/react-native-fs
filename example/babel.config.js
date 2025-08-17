@@ -8,7 +8,7 @@ const res = getConfig(
   {
     presets: ['module:@react-native/babel-preset'],
   },
-  { root, pkg }
+  { root, pkg },
 );
 
 // As of RN@0.75.2, the first override in the getConfig() result sets up

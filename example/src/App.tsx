@@ -1,6 +1,11 @@
-import { useEffect } from 'react';
+import { type FunctionComponent, useEffect } from 'react';
 
-import { Alert, Button, SafeAreaView, ScrollView } from 'react-native';
+import { Alert, Button, ScrollView, View } from 'react-native';
+
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import { pickFile, read } from '@dr.pogodin/react-native-fs';
 
@@ -8,15 +13,25 @@ import TestBaseMethods from './TestBaseMethods';
 import TestConstants from './TestConstants';
 import { start, stop } from './testServer';
 
-export default function App() {
+const AppContent: FunctionComponent = () => {
   useEffect(() => {
     start();
     return () => {
       stop();
     };
   }, []);
+
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView>
+    <View
+      style={{
+        paddingBottom: insets.bottom,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+        paddingTop: insets.top,
+      }}
+    >
       <ScrollView>
         <TestConstants />
         <TestBaseMethods />
@@ -35,6 +50,14 @@ export default function App() {
           title="pickFile()"
         />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
-}
+};
+
+const App: FunctionComponent = () => (
+  <SafeAreaProvider>
+    <AppContent />
+  </SafeAreaProvider>
+);
+
+export default App;

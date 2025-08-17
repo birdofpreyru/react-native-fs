@@ -53,7 +53,7 @@ async function readDirGeneric(
 
   const { FileTypeDirectory, FileTypeRegular } = RNFS.getConstants();
 
-  return files.map((file) => ({
+  return files.map(file => ({
     ctime: (file.ctime && new Date((file.ctime as number) * 1000)) || null,
     mtime: (file.mtime && new Date((file.mtime as number) * 1000)) || null,
     name: file.name,
@@ -144,7 +144,7 @@ export function downloadFile(options: DownloadFileOptionsT): {
 
   if (options.begin) {
     subscriptions.push(
-      nativeEventEmitter.addListener('DownloadBegin', (res) => {
+      nativeEventEmitter.addListener('DownloadBegin', res => {
         if (res.jobId === jobId && options.begin) options.begin(res);
       }),
     );
@@ -152,7 +152,7 @@ export function downloadFile(options: DownloadFileOptionsT): {
 
   if (options.progress) {
     subscriptions.push(
-      nativeEventEmitter.addListener('DownloadProgress', (res) => {
+      nativeEventEmitter.addListener('DownloadProgress', res => {
         if (res.jobId === jobId && options.progress) options.progress(res);
       }),
     );
@@ -160,7 +160,7 @@ export function downloadFile(options: DownloadFileOptionsT): {
 
   if (options.resumable) {
     subscriptions.push(
-      nativeEventEmitter.addListener('DownloadResumable', (res) => {
+      nativeEventEmitter.addListener('DownloadResumable', res => {
         if (res.jobId === jobId && options.resumable) options.resumable(res);
       }),
     );
@@ -190,7 +190,7 @@ export function downloadFile(options: DownloadFileOptionsT): {
       try {
         return await RNFS.downloadFile(nativeOptions);
       } finally {
-        subscriptions.forEach((sub) => sub.remove());
+        subscriptions.forEach(sub => sub.remove());
       }
     })(),
   };
@@ -268,7 +268,7 @@ export function readDir(dirpath: string): Promise<ReadDirResItemT[]> {
 // Node style version (lowercase d). Returns just the names
 export async function readdir(dirpath: string): Promise<string[]> {
   const files = await RNFS.readDir(normalizeFilePath(dirpath));
-  return files.map((file) => file.name || '');
+  return files.map(file => file.name || '');
 }
 
 export async function stat(filepath: string): Promise<StatResultT> {
@@ -382,7 +382,7 @@ export function uploadFiles(options: UploadFileOptionsT): {
   return {
     jobId,
     promise: RNFS.uploadFiles(nativeOptions).then((res: UploadResultT) => {
-      subscriptions.forEach((sub) => sub.remove());
+      subscriptions.forEach(sub => sub.remove());
 
       if (res.statusCode >= 400) {
         const error = Error(getReasonPhrase(res.statusCode));

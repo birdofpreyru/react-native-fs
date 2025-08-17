@@ -94,8 +94,9 @@ export const copyTests: TestMethods = {
     }
   },
   'copyFile() should copy folders too [non Windows]': async () => {
-    if (notPlatform('ios', 'macos'))
-      {return Result.notAvailable('ios', 'macos');}
+    if (notPlatform('ios', 'macos')) {
+      return Result.notAvailable('ios', 'macos');
+    }
 
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
@@ -197,8 +198,9 @@ export const copyTests: TestMethods = {
 
     // execute AND test
     try {
-      if (await exists(target))
-        {return Result.error(`${target} should not exist`);}
+      if (await exists(target)) {
+        return Result.error(`${target} should not exist`);
+      }
       await copyFileAssets(TEST_ASSET_UFT8_PATH, target);
       const res = await readFile(target);
       if (res !== CONTENT) return Result.error(`${res} !== ${CONTENT}`);
@@ -217,8 +219,9 @@ export const copyTests: TestMethods = {
 
       // execute AND test
       try {
-        if (await exists(target))
-          {return Result.error(`${target} should not exist`);}
+        if (await exists(target)) {
+          return Result.error(`${target} should not exist`);
+        }
         await copyFileAssets('invalid-path', target);
         return Result.error('should throw an error for invalid path');
       } catch {
@@ -240,7 +243,7 @@ export const copyTests: TestMethods = {
       try {
         await copyFileAssets('test', copyFileAssetsNewPath);
         const res = await readFile(
-          `${copyFileAssetsNewPath}/${TEST_ASSET_UFT8}`
+          `${copyFileAssetsNewPath}/${TEST_ASSET_UFT8}`,
         );
         if (res !== CONTENT) return Result.error(`${res} !== ${CONTENT}`);
         return Result.success();
@@ -257,8 +260,9 @@ export const copyTests: TestMethods = {
 
     // execute AND test
     try {
-      if (await exists(target))
-        {return Result.error(`${target} should not exist`);}
+      if (await exists(target)) {
+        return Result.error(`${target} should not exist`);
+      }
       await copyFileRes(TEST_ANDROID_RESOURCE_UTF8, target);
       const res = await readFile(target);
       if (res !== CONTENT) return Result.error(`${res} !== ${CONTENT}`);

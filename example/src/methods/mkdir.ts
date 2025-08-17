@@ -12,13 +12,16 @@ export const mkdirTests: TestMethods = {
 
     // execute AND test
     try {
-      if (await exists(pathA))
-        {return Result.error(`path should not exist yet: ${pathA}`);}
+      if (await exists(pathA)) {
+        return Result.error(`path should not exist yet: ${pathA}`);
+      }
       await mkdir(pathB);
-      if (!(await exists(pathA)))
-        {return Result.error(`path should exist: ${pathB}`);}
-      if (!(await exists(pathB)))
-        {return Result.error(`path should exist: ${pathB}`);}
+      if (!(await exists(pathA))) {
+        return Result.error(`path should exist: ${pathB}`);
+      }
+      if (!(await exists(pathB))) {
+        return Result.error(`path should exist: ${pathB}`);
+      }
       return Result.success();
     } catch (e) {
       return Result.catch(e);

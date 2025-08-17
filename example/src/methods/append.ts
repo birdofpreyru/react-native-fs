@@ -17,8 +17,9 @@ export const appendTests: TestMethods = {
 
       // test
       let res = await readFile(file);
-      if (res !== `${CONTENT}${CONTENT}`)
-        {return Result.error('failed to append utf8');}
+      if (res !== `${CONTENT}${CONTENT}`) {
+        return Result.error('failed to append utf8');
+      }
 
       // prepare 2
       await writeFile(file, CONTENT);
@@ -28,8 +29,9 @@ export const appendTests: TestMethods = {
 
       // test 2
       res = await readFile(file);
-      if (res !== `${CONTENT}${CONTENT}`)
-        {return Result.error('failed to append text');}
+      if (res !== `${CONTENT}${CONTENT}`) {
+        return Result.error('failed to append text');
+      }
 
       return Result.success();
     } catch (e: any) {

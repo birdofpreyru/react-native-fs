@@ -93,8 +93,9 @@ export const statTests: TestMethods = {
                   //! this error message will not work anywhere else
                   `ENOENT: no such file or directory, open '/data/user/0/drpogodin.reactnativefs.example/cache/${expectedPath}'`,
               })
-            )
-              {return Result.catch(e);}
+            ) {
+              return Result.catch(e);
+            }
             break;
           case 'windows':
             if (
@@ -102,8 +103,9 @@ export const statTests: TestMethods = {
                 code: 'ENOENT',
                 message: `ENOENT: no such file or directory, open ${notExisting}`,
               })
-            )
-              {return Result.catch(e);}
+            ) {
+              return Result.catch(e);
+            }
             break;
           default:
             if (
@@ -111,8 +113,9 @@ export const statTests: TestMethods = {
                 code: 'NSCocoaErrorDomain:260',
                 message: `The file “${ÄÖÜ}non-existing-file.txt” couldn’t be opened because there is no such file.`,
               })
-            )
-              {return Result.catch(e);}
+            ) {
+              return Result.catch(e);
+            }
         }
       }
 
@@ -134,17 +137,19 @@ type ExpectedType = {
 };
 function verifyItem(
   given: StatResultT | undefined,
-  expected: ExpectedType
+  expected: ExpectedType,
 ): string {
   if (!given) return 'Item is undefined';
   //! this seems not to be available, at least on windows
   // if (given.name !== expected.name)
   //   return `incorrect name ${given.name?.normalize()} !== ${expected.name.normalize()}`;
-  if (given.path !== expected.path)
-    {return `incorrect path ${given.path.normalize()} !== ${expected.path.normalize()}`;}
+  if (given.path !== expected.path) {
+    return `incorrect path ${given.path.normalize()} !== ${expected.path.normalize()}`;
+  }
   if (expected.itemType === 'file' && !given.isFile()) return 'not a file';
-  if (expected.itemType === 'folder' && !given.isDirectory())
-    {return 'not a folder';}
+  if (expected.itemType === 'folder' && !given.isDirectory()) {
+    return 'not a folder';
+  }
   //! ctime - seems to work here for android?
   // if (Platform.OS === "android" && given.ctime !== null)
   //   return "ctime is not null for Android";
@@ -152,30 +157,35 @@ function verifyItem(
   else if (
     given.ctime.valueOf() < expected.now - 1000 ||
     given.ctime.valueOf() > expected.now + 1000
-  )
-    {return `ctime is not within the expected range: ${given.ctime.valueOf()} !== ${
+  ) {
+    return `ctime is not within the expected range: ${given.ctime.valueOf()} !== ${
       expected.now
-    }`;}
+    }`;
+  }
 
   // mtime
   if (!(given.mtime instanceof Date)) return 'mtime is not a Date';
   if (
     given.mtime.valueOf() < expected.now - 1000 ||
     given.mtime.valueOf() > expected.now + 1000
-  )
-    {return `mtime is not within the expected range: ${given.mtime.valueOf()} !== ${
+  ) {
+    return `mtime is not within the expected range: ${given.mtime.valueOf()} !== ${
       expected.now
-    }`;}
+    }`;
+  }
 
-  if (given.size !== expected.size)
-    {return `size is not the expected value: ${given.size} !== ${expected.size}`;}
+  if (given.size !== expected.size) {
+    return `size is not the expected value: ${given.size} !== ${expected.size}`;
+  }
 
   // NOTE: mode is documented, but not actually returned, at least on Android. We'll deal with it later.
-  if (given.mode !== expected.mode)
-    {return `mode is not the expected value: ${given.mode} !== ${expected.mode}`;}
+  if (given.mode !== expected.mode) {
+    return `mode is not the expected value: ${given.mode} !== ${expected.mode}`;
+  }
 
-  if (given.originalFilepath !== expected.originalFilepath)
-    {return `originalFilepath is not the expected value: ${given.originalFilepath} !== ${expected.originalFilepath}`;}
+  if (given.originalFilepath !== expected.originalFilepath) {
+    return `originalFilepath is not the expected value: ${given.originalFilepath} !== ${expected.originalFilepath}`;
+  }
 
   return '';
 }
