@@ -12,20 +12,20 @@
     "build:ios": "react-native build-ios --mode Debug"
   },
   "dependencies": {
-    "@dr.pogodin/react-native-static-server": "^0.23.0",
+    "@dr.pogodin/react-native-static-server": "^0.24.1",
     "lodash": "^4.17.21",
     "react": "19.1.0",
     "react-native": "0.81.0",
-    "react-native-safe-area-context": "^5.6.0",
-    "react-native-windows": "0.80.0-preview.2"
+    "react-native-safe-area-context": "^5.6.1",
+    "react-native-windows": "0.80.0-preview.3"
   },
   "devDependencies": {
     "@babel/core": "^7.28.3",
     "@babel/preset-env": "^7.28.3",
     "@babel/runtime": "^7.28.3",
-    "@react-native-community/cli": "20.0.0",
-    "@react-native-community/cli-platform-android": "20.0.0",
-    "@react-native-community/cli-platform-ios": "20.0.0",
+    "@react-native-community/cli": "20.0.1",
+    "@react-native-community/cli-platform-android": "20.0.1",
+    "@react-native-community/cli-platform-ios": "20.0.1",
     "@react-native/babel-preset": "0.81.0",
     "@react-native/metro-config": "0.81.0",
     "@react-native/typescript-config": "0.81.0",
