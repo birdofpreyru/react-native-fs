@@ -88,6 +88,8 @@ export type DownloadResultT = {
   jobId: number; // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
   statusCode: number; // The HTTP status code
   bytesWritten: number; // The number of bytes written to the file
+  headers?: StringMapT; // The HTTP response headers from the server
+  body?: string; // The HTTP response body
 };
 
 export type FileOptionsT = {

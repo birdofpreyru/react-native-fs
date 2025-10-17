@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-typedef void (^DownloadCompleteCallback)(NSNumber*, NSNumber*);
+typedef void (^DownloadCompleteCallback)(NSNumber*, NSNumber*, NSDictionary*, NSString*);
 typedef void (^ErrorCallback)(NSError*);
 typedef void (^BeginCallback)(NSNumber*, NSNumber*, NSDictionary*);
 typedef void (^ProgressCallback)(NSNumber*, NSNumber*);

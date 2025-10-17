@@ -2,8 +2,11 @@ package com.drpogodin.reactnativefs
 
 import android.os.AsyncTask
 import android.util.Log
+import com.facebook.react.bridge.Arguments
 import java.io.BufferedInputStream
+import java.io.BufferedReader
 import java.io.FileOutputStream
+import java.io.InputStreamReader
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.HttpURLConnection
@@ -37,6 +40,8 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
         var input: InputStream? = null
         var output: OutputStream? = null
         var connection: HttpURLConnection? = null
+        var responseStream: BufferedInputStream? = null
+        var responseStreamReader: BufferedReader? = null
         try {
             connection = param!!.src!!.openConnection() as HttpURLConnection
             val iterator = param.headers!!.keySetIterator()
@@ -61,17 +66,23 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                 statusCode = connection.responseCode
                 lengthOfFile = getContentLength(connection)
             }
-            if (statusCode in 200..299) {
-                val headers = connection.headerFields
-                val headersFlat: MutableMap<String, String> = HashMap()
-                for ((headerKey, value) in headers) {
-                    val valueKey = value[0]
-                    if (headerKey != null && valueKey != null) {
-                        headersFlat[headerKey] = valueKey
-                    }
-                }
-                mParam!!.onDownloadBegin?.onDownloadBegin(statusCode, lengthOfFile, headersFlat)
 
+            val responseHeadersBegin = Arguments.createMap()
+            val responseHeaders = Arguments.createMap()
+            val map = connection.headerFields
+            for ((key, value) in map) {
+              // NOTE: Although the type of key is evaluated as non-nullable by the compiler,
+              // somehow it may become `null` after the upgrade to RN@0.75, thus this guard for now.
+              if (key !== null) {
+                val count = 0
+                responseHeadersBegin.putString(key, value[count])
+                responseHeaders.putString(key, value[count])
+              }
+            }
+
+            mParam!!.onDownloadBegin?.onDownloadBegin(statusCode, lengthOfFile, responseHeadersBegin)
+
+            if (statusCode in 200..299) {
                 val contentEncoding = connection.getHeaderField("Content-Encoding")
 
                 input = if ("gzip".equals(contentEncoding, ignoreCase = true)) {
@@ -79,7 +90,7 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                     GZIPInputStream(connection.inputStream)
                 } else {
                     BufferedInputStream(connection.inputStream, 8 * 1024)
-                }          
+                }
 
                 output = FileOutputStream(param.dest)
                 val data = ByteArray(8 * 1024)
@@ -115,12 +126,26 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                 }
                 output.flush()
                 res.bytesWritten = total
+            } else {
+                responseStream = BufferedInputStream(connection.errorStream)
+                responseStreamReader = BufferedReader(InputStreamReader(responseStream))
+                val stringBuilder = StringBuilder()
+                var line: String?
+                while (responseStreamReader.readLine().also { line = it } != null) {
+                    stringBuilder.append(line).append("\n")
+                }
+                val response = stringBuilder.toString()
+
+                res!!.body = response
             }
             res.statusCode = statusCode
+            res!!.headers = responseHeaders
         } finally {
             output?.close()
             input?.close()
             connection?.disconnect()
+            responseStream?.close()
+            responseStreamReader?.close()
         }
     }
 

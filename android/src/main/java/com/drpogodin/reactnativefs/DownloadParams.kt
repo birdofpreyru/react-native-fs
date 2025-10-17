@@ -10,7 +10,7 @@ class DownloadParams {
     }
 
     interface OnDownloadBegin {
-        fun onDownloadBegin(statusCode: Int, contentLength: Long, headers: Map<String, String?>?)
+        fun onDownloadBegin(statusCode: Int, contentLength: Long, headers: ReadableMap)
     }
 
     interface OnDownloadProgress {
