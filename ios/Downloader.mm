@@ -121,18 +121,24 @@
   NSURL *destURL = [NSURL fileURLWithPath:_params.toFile];
   NSFileManager *fm = [NSFileManager defaultManager];
   NSError *error = nil;
+  NSString *responseBodyString = nil;
   if([_statusCode integerValue] >= 200 && [_statusCode integerValue] < 300) {
     [fm removeItemAtURL:destURL error:nil];       // Remove file at destination path, if it exists
     [fm moveItemAtURL:location toURL:destURL error:&error];
     // There are no guarantees about how often URLSession:downloadTask:didWriteData: will fire,
     // so we read an authoritative number of bytes written here.
     _bytesWritten = @([fm attributesOfItemAtPath:_params.toFile error:nil].fileSize);
+  } else {
+    NSData *responseData = [NSData dataWithContentsOfURL:location options:0 error:&error];
+    if (responseData) {
+      responseBodyString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+    }
   }
   if (error) {
     NSLog(@"RNFS download: unable to move tempfile to destination. %@, %@", error, error.userInfo);
   }
 
-  // When numerous downloads are called the sessions are not always invalidated and cleared by iOS14. 
+  // When numerous downloads are called the sessions are not always invalidated and cleared by iOS14.
   // This leads to error 28 – no space left on device so we manually flush and invalidate to free up space
   if(session != nil){
     [session flushWithCompletionHandler:^{
@@ -140,7 +146,7 @@
     }];
   }
 
-  return _params.completeCallback(_statusCode, _bytesWritten);
+  return _params.completeCallback(_statusCode, _bytesWritten, httpResponse.allHeaderFields, responseBodyString);
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error

@@ -413,7 +413,7 @@ const DocumentDirectoryPath: string;
 
 The absolute path to the document directory.
 
-**IMPORTANT**: `DocumentDirectoryPath` (iOS) will include an ID in the path that changes each build e.g `...Application/BCE32988-4C51-483B-892B-16671E3771C2/Documents`. 
+**IMPORTANT**: `DocumentDirectoryPath` (iOS) will include an ID in the path that changes each build e.g `...Application/BCE32988-4C51-483B-892B-16671E3771C2/Documents`.
 
 Use relative paths and resolve the full path at runtime to avoid files not being found on new builds.
 
@@ -886,7 +886,7 @@ function pickFile(options?: PickFileOptionsT): Promise<string[]>;
 Prompts the user to select file(s) using a platform-provided file picker UI,
 which also allows to access files outside the app sandbox.
 
-**BEWARE:** On **windows** the options differ from the other platform since the 
+**BEWARE:** On **windows** the options differ from the other platform since the
 native file piper doesn't support `mimeTypes` but `fileExtensions` and different
 picker types like `singleFile`, `multipleFIle` and `folder`. For more information
 see [PickFileOptionsT].
@@ -1191,7 +1191,7 @@ in this library fork.
 ```ts
 function write(filepath: string, contents: string, position?: number, encoding?: EncodingT): Promise<void>;
 ```
-**VERIFIED:** Android, iOS, macOS, Windows 
+**VERIFIED:** Android, iOS, macOS, Windows
 
 Writes content to a file at the given random access position.
 
@@ -1313,7 +1313,7 @@ The type of options argument of [downloadFile()].
   argument of [DownloadProgressCallbackResultT] type.
 
 - `resumable` &mdash; **() => void** &mdash; Optional. iOS-only. If provided,
-  it is invoked when the download has stopped and and can be resumed using [resumeDownload()]. 
+  it is invoked when the download has stopped and and can be resumed using [resumeDownload()].
 
 - `connectionTimeout` &mdash; **number** &mdash; Optional. Only supported on
   Android yet.
@@ -1347,6 +1347,8 @@ type DownloadResultT = {
   jobId: number;
   statusCode: number;
   bytesWritten: number;
+  headers: StringMapT; // iOS and Android only
+  body?: string; // iOS and Android only
 };
 ```
 Return type of [downloadFile()].
@@ -1355,6 +1357,9 @@ Return type of [downloadFile()].
 - `statusCode` &mdash; **number** &mdash; The HTTP status code.
 - `bytesWritten` &mdash; **number** &mdash; The number of bytes written to
   the file.
+- `headers` &mdash; [StringMapT] &mdash; The HTTP response headers from
+  the server.
+- `body` &mdash; **string** &mdash; The HTTP response body only for not in the range 200-299 status codes
 
 ### EncodingT
 [EncodingT]: #encodingt
@@ -1431,10 +1436,10 @@ Optional parameters for [pickFile()] function.
   of files user is allowed to select. Defaults to `['*/*']` allowing to select
   any file.
 - `pickerType` &mdash; **'singleFile' | 'multipleFiles' | 'folder'** &mdash;  *[Windows]* Optional.
-   The type of objects to pick can be either a single file, multiple files or one folder. 
+   The type of objects to pick can be either a single file, multiple files or one folder.
    - Multiple folders are not supported by windows.
    - Defaults to `'singleFile'` */
-- `fileExtensions` &mdash; **FileExtension[]** &mdash; *[Windows]* Optional, The file extensions to pick from. 
+- `fileExtensions` &mdash; **FileExtension[]** &mdash; *[Windows]* Optional, The file extensions to pick from.
    - Only applies to `pickerType !== 'folder'`
    - Defaults to `[]` (all file extensions) */
    - `FileExtension = ´.${string}´` - e.g `'.bmp'`, `'.mp3'`

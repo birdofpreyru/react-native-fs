@@ -608,7 +608,7 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
 
   __block BOOL callbackFired = NO;
 
-  params.completeCallback = ^(NSNumber* statusCode, NSNumber* bytesWritten) {
+  params.completeCallback = ^(NSNumber* statusCode, NSNumber* bytesWritten, NSDictionary* headers, NSString* body) {
     if (callbackFired) {
       return;
     }
@@ -620,6 +620,12 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
     }
     if (bytesWritten) {
       [result setObject:bytesWritten forKey: @"bytesWritten"];
+    }
+    if (headers) {
+      [result setObject:headers forKey: @"headers"];
+    }
+    if (body) {
+      [result setObject:body forKey: @"body"];
     }
     return resolve(result);
   };
@@ -990,7 +996,7 @@ RCT_EXPORT_METHOD(copyAssetsVideoIOS: (NSString *) imageUri
       NSURL *url = [(AVURLAsset *)asset URL];
       NSLog(@"Final URL %@",url);
       BOOL writeResult = false;
-        
+
       if (@available(iOS 9.0, *)) {
           NSURL *destinationUrl = [NSURL fileURLWithPath:destination relativeToURL:nil];
           writeResult = [[NSFileManager defaultManager] copyItemAtURL:url toURL:destinationUrl error:&error];
@@ -998,7 +1004,7 @@ RCT_EXPORT_METHOD(copyAssetsVideoIOS: (NSString *) imageUri
           NSData *videoData = [NSData dataWithContentsOfURL:url];
           writeResult = [videoData writeToFile:destination options:NSDataWritingAtomic error:&error];
       }
-        
+
       if(writeResult) {
         NSLog(@"video success");
       }
@@ -1088,15 +1094,15 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
   return [self constantsToExport];
 }
 
-- (void)copyFileAssets:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)copyFileAssets:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyFileAssets()"];
 }
 
-- (void)copyFileRes:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)copyFileRes:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyFileRes()"];
 }
 
-- (void)copyFolder:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)copyFolder:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyFolder()"];
 }
 
@@ -1104,23 +1110,23 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"existsAssets()"];
 }
 
-- (void)existsRes:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)existsRes:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"existsRes()"];
 }
 
-- (void)getAllExternalFilesDirs:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)getAllExternalFilesDirs:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"getAllExternalFilesDirs()"];
 }
 
-- (void)readFileAssets:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)readFileAssets:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"readFileAssets()"];
 }
 
-- (void)readFileRes:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)readFileRes:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"readFileRes()"];
 }
 
-- (void)scanFile:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject { 
+- (void)scanFile:(NSString *)path resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"scanFile()"];
 }
 

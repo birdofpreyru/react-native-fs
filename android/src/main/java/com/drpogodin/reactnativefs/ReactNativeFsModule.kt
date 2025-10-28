@@ -263,6 +263,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
                         infoMap.putInt("jobId", jobId)
                         infoMap.putInt("statusCode", res.statusCode)
                         infoMap.putDouble("bytesWritten", res.bytesWritten.toDouble())
+                        infoMap.putMap("headers", res.headers)
+                        infoMap.putString("body", res.body)
                         promise.resolve(infoMap)
                     } else {
                         reject(promise, options.getString("toFile"), res.exception)
@@ -271,16 +273,12 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             }
             if (hasBeginCallback) {
                 params.onDownloadBegin = object : OnDownloadBegin {
-                    override fun onDownloadBegin(statusCode: Int, contentLength: Long, headers: Map<String, String?>?) {
-                        val headersMap = Arguments.createMap()
-                        for ((key, value) in headers!!) {
-                            headersMap.putString(key, value)
-                        }
+                    override fun onDownloadBegin(statusCode: Int, contentLength: Long, headers: ReadableMap) {
                         val data = Arguments.createMap()
                         data.putInt("jobId", jobId)
                         data.putInt("statusCode", statusCode)
                         data.putDouble("contentLength", contentLength.toDouble())
-                        data.putMap("headers", headersMap)
+                        data.putMap("headers", headers)
                         sendEvent("DownloadBegin", data)
                     }
                 }
