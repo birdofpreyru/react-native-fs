@@ -1,6 +1,6 @@
 {
   "name": "@dr.pogodin/react-native-fs",
-  "version": "2.36.0",
+  "version": "2.36.1",
   "description": "Native filesystem access for React Native",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
@@ -56,28 +56,28 @@
   "devDependencies": {
     "@eslint/compat": "^1.4.0",
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.37.0",
+    "@eslint/js": "^9.38.0",
     "@react-native-community/cli": "20.0.2",
-    "@react-native/babel-preset": "0.82.0",
-    "@react-native/eslint-config": "^0.82.0",
-    "@react-native/typescript-config": "^0.82.0",
+    "@react-native/babel-preset": "0.82.1",
+    "@react-native/eslint-config": "^0.82.1",
+    "@react-native/typescript-config": "^0.82.1",
     "@types/jest": "^30.0.0",
     "@types/react": "^19.1.10",
     "del-cli": "^7.0.0",
-    "eslint": "^9.37.0",
+    "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.2.0",
     "prettier": "^3.6.2",
     "react": "19.1.1",
-    "react-native": "0.82.0",
-    "react-native-builder-bob": "^0.40.13",
+    "react-native": "0.82.1",
+    "react-native-builder-bob": "^0.40.14",
+    "react-native-windows": "0.80.0-preview.10",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*",
-    "react-native-windows": "0.80.0-preview.3"
+    "react-native": "*"
   },
   "workspaces": [
     "example"
