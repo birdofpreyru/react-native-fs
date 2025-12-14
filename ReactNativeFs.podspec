@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
 
   s.resource_bundles = { 'RNFS_PrivacyInfo' => 'ios/PrivacyInfo.xcprivacy' }
   s.frameworks = "AVFoundation", "Photos"
-  s.source_files = "ios/**/*.{h,m,mm,cpp}"
+  s.source_files = "ios/**/*.{h,m,mm,swift,cpp}"
 
   # Necessary for background downloads to work,
   # see: https://github.com/birdofpreyru/react-native-fs/issues/114
@@ -24,6 +24,7 @@ Pod::Spec.new do |s|
   # for now it is commented out, as that is what is proven to work in the issue
   # referenced above).
   # s.private_header_files = "ios/**/*.h"
+
   s.public_header_files = "ios/RNFSBackgroundDownloads.h"
 
   install_modules_dependencies(s)

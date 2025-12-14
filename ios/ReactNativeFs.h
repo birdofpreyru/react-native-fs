@@ -1,6 +1,6 @@
 #import <React/RCTEventEmitter.h>
+#import <ReactNativeFsSpec/ReactNativeFsSpec.h>
 
-#import "ReactNativeFsSpec/ReactNativeFsSpec.h"
 
 @interface ReactNativeFs : RCTEventEmitter <
   NativeReactNativeFsSpec
