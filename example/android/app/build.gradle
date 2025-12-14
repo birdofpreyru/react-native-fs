@@ -2,6 +2,18 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// TODO: This is a temporary workaround of the issue:
+// https://github.com/facebook/react-native/issues/54851
+// Presumably, we can remove it at a later point, when all dependencies
+// are correctly updated to RN@0.83.
+allprojects {
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute module("com.facebook.react:hermes-android") using module("com.facebook.hermes:hermes-android:0.14.0")
+        }
+    }
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
