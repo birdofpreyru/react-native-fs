@@ -363,10 +363,15 @@ export function uploadFiles(options: UploadFileOptionsT): {
     );
   }
 
+  const files = options.files.map((item) => ({
+    ...item,
+    name: item.name ?? item.filename,
+  }));
+
   var nativeOptions: NativeUploadFileOptionsT = {
     jobId: jobId,
     toUrl: options.toUrl,
-    files: options.files,
+    files,
     binaryStreamOnly: options.binaryStreamOnly || false,
     headers: options.headers || {},
     fields: options.fields || {},
