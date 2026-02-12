@@ -1,5 +1,5 @@
 import { getReasonPhrase } from 'http-status-codes';
-import { type EmitterSubscription, NativeEventEmitter } from 'react-native';
+import type { EventSubscription } from 'react-native';
 
 import RNFS, {
   type DownloadBeginCallbackResultT,
@@ -33,8 +33,6 @@ import {
   readFileGeneric,
   toEncoding,
 } from './utils';
-
-const nativeEventEmitter = new NativeEventEmitter(RNFS);
 
 let lastJobId = 0;
 
@@ -140,11 +138,11 @@ export function downloadFile(options: DownloadFileOptionsT): {
   }
 
   const jobId = ++lastJobId;
-  const subscriptions: EmitterSubscription[] = [];
+  const subscriptions: EventSubscription[] = [];
 
   if (options.begin) {
     subscriptions.push(
-      nativeEventEmitter.addListener('DownloadBegin', res => {
+      RNFS.onDownloadBegin(res => {
         if (res.jobId === jobId && options.begin) options.begin(res);
       }),
     );
@@ -152,7 +150,7 @@ export function downloadFile(options: DownloadFileOptionsT): {
 
   if (options.progress) {
     subscriptions.push(
-      nativeEventEmitter.addListener('DownloadProgress', res => {
+      RNFS.onDownloadProgress(res => {
         if (res.jobId === jobId && options.progress) options.progress(res);
       }),
     );
@@ -160,7 +158,7 @@ export function downloadFile(options: DownloadFileOptionsT): {
 
   if (options.resumable) {
     subscriptions.push(
-      nativeEventEmitter.addListener('DownloadResumable', res => {
+      RNFS.onDownloadResumable(res => {
         if (res.jobId === jobId && options.resumable) options.resumable(res);
       }),
     );
@@ -317,7 +315,7 @@ export function uploadFiles(options: UploadFileOptionsT): {
   promise: Promise<UploadResultT>;
 } {
   const jobId = ++lastJobId;
-  const subscriptions: EmitterSubscription[] = [];
+  const subscriptions: EventSubscription[] = [];
 
   if (typeof options !== 'object') {
     throw new Error('uploadFiles: Invalid value for argument `options`');
@@ -339,28 +337,19 @@ export function uploadFiles(options: UploadFileOptionsT): {
   }
 
   if (options.begin) {
-    subscriptions.push(
-      nativeEventEmitter.addListener('UploadBegin', options.begin),
-    );
+    subscriptions.push(RNFS.onUploadBeing(options.begin));
+
+  // TODO: Deprecated, will be removed in a future release.
   } else if (options.beginCallback) {
-    // Deprecated
-    subscriptions.push(
-      nativeEventEmitter.addListener('UploadBegin', options.beginCallback),
-    );
+    subscriptions.push(RNFS.onUploadBeing(options.beginCallback));
   }
 
   if (options.progress) {
-    subscriptions.push(
-      nativeEventEmitter.addListener('UploadProgress', options.progress),
-    );
+    subscriptions.push(RNFS.onUploadProgress(options.progress));
+
+  // TODO: Deprecated, will be removed in a future release.
   } else if (options.progressCallback) {
-    // Deprecated
-    subscriptions.push(
-      nativeEventEmitter.addListener(
-        'UploadProgress',
-        options.progressCallback,
-      ),
-    );
+    subscriptions.push(RNFS.onUploadProgress(options.progressCallback));
   }
 
   const files = options.files.map((item) => ({

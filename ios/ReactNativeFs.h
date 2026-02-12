@@ -1,11 +1,9 @@
-#import <React/RCTEventEmitter.h>
 #import <ReactNativeFsSpec/ReactNativeFsSpec.h>
 
-
-@interface ReactNativeFs : RCTEventEmitter <
+@interface ReactNativeFs : ReactNativeFsSpecBase <
   NativeReactNativeFsSpec
 #if !TARGET_OS_OSX
-  ,UIDocumentPickerDelegate
+  , UIDocumentPickerDelegate
 #endif
 >
 

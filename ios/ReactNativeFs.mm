@@ -641,7 +641,7 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
   if (hasBeginCallback) {
     params.beginCallback = ^(NSNumber* statusCode, NSNumber* contentLength, NSDictionary* headers) {
         if (self.bridge != nil)
-            [self sendEventWithName:@"DownloadBegin" body:@{@"jobId": jobId,
+            [self emitOnDownloadBegin:@{@"jobId": jobId,
                                                                                             @"statusCode": statusCode,
                                                                                             @"contentLength": contentLength,
                                                                                             @"headers": headers ?: [NSNull null]}];
@@ -651,8 +651,7 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
   if (hasProgressCallback) {
     params.progressCallback = ^(NSNumber* contentLength, NSNumber* bytesWritten) {
         if (self.bridge != nil)
-          [self sendEventWithName:@"DownloadProgress"
-                                                  body:@{@"jobId": jobId,
+          [self emitOnDownloadProgress:@{@"jobId": jobId,
                                                           @"contentLength": contentLength,
                                                           @"bytesWritten": bytesWritten}];
     };
@@ -661,7 +660,7 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
   if (hasResumableCallback) {
     params.resumableCallback = ^() {
         if (self.bridge != nil)
-            [self sendEventWithName:@"DownloadResumable" body:@{@"jobId": jobId}];
+            [self emitOnDownloadResumable:@{@"jobId": jobId}];
     };
   }
 
@@ -762,16 +761,14 @@ RCT_EXPORT_METHOD(uploadFiles:(JS::NativeReactNativeFs::NativeUploadFileOptionsT
   if (hasBeginCallback) {
     params.beginCallback = ^() {
         if (self.bridge != nil)
-          [self sendEventWithName:@"UploadBegin"
-                                                  body:@{@"jobId": jobId}];
+          [self emitOnUploadBegin:@{@"jobId": jobId}];
     };
   }
 
   if (hasProgressCallback) {
     params.progressCallback = ^(NSNumber* totalBytesExpectedToSend, NSNumber* totalBytesSent) {
         if (self.bridge != nil)
-            [self sendEventWithName:@"UploadProgress"
-                                                  body:@{@"jobId": jobId,
+            [self emitOnUploadProgress:@{@"jobId": jobId,
                                                           @"totalBytesExpectedToSend": totalBytesExpectedToSend,
                                                           @"totalBytesSent": totalBytesSent}];
     };

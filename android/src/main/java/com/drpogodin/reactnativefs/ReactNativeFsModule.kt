@@ -274,23 +274,25 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             if (hasBeginCallback) {
                 params.onDownloadBegin = object : OnDownloadBegin {
                     override fun onDownloadBegin(statusCode: Int, contentLength: Long, headers: ReadableMap) {
-                        val data = Arguments.createMap()
-                        data.putInt("jobId", jobId)
-                        data.putInt("statusCode", statusCode)
-                        data.putDouble("contentLength", contentLength.toDouble())
-                        data.putMap("headers", headers)
-                        sendEvent("DownloadBegin", data)
+                        val data = Arguments.createMap().apply {
+                            putInt("jobId", jobId)
+                            putInt("statusCode", statusCode)
+                            putDouble("contentLength", contentLength.toDouble())
+                            putMap("headers", headers)
+                        }
+                        emitOnDownloadBegin(data)
                     }
                 }
             }
             if (hasProgressCallback) {
                 params.onDownloadProgress = object : OnDownloadProgress {
                     override fun onDownloadProgress(contentLength: Long, bytesWritten: Long) {
-                        val data = Arguments.createMap()
-                        data.putInt("jobId", jobId)
-                        data.putDouble("contentLength", contentLength.toDouble())
-                        data.putDouble("bytesWritten", bytesWritten.toDouble())
-                        sendEvent("DownloadProgress", data)
+                        val data = Arguments.createMap().apply {
+                            putInt("jobId", jobId)
+                            putDouble("contentLength", contentLength.toDouble())
+                            putDouble("bytesWritten", bytesWritten.toDouble())
+                        }
+                        emitOnDownloadProgress(data)
                     }
                 }
             }
@@ -775,20 +777,22 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             if (hasBeginCallback) {
                 params.onUploadBegin = object : UploadParams.OnUploadBegin {
                     override fun onUploadBegin() {
-                        val data = Arguments.createMap()
-                        data.putInt("jobId", jobId)
-                        sendEvent("UploadBegin", data)
+                        val data = Arguments.createMap().apply {
+                            putInt("jobId", jobId)
+                        }
+                        emitOnUploadBegin(data)
                     }
                 }
             }
             if (hasProgressCallback) {
                 params.onUploadProgress = object : UploadParams.OnUploadProgress {
                     override fun onUploadProgress(totalBytesExpectedToSend: Int, totalBytesSent: Int) {
-                        val data = Arguments.createMap()
-                        data.putInt("jobId", jobId)
-                        data.putInt("totalBytesExpectedToSend", totalBytesExpectedToSend)
-                        data.putInt("totalBytesSent", totalBytesSent)
-                        sendEvent("UploadProgress", data)
+                        val data = Arguments.createMap().apply {
+                            putInt("jobId", jobId)
+                            putInt("totalBytesExpectedToSend", totalBytesExpectedToSend)
+                            putInt("totalBytesSent", totalBytesSent)
+                        }
+                        emitOnUploadProgress(data)
                     }
                 }
             }
@@ -1006,12 +1010,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
 
     private fun rejectFileIsDirectory(promise: Promise) {
         promise.reject("EISDIR", "EISDIR: illegal operation on a directory, read")
-    }
-
-    private fun sendEvent(eventName: String, params: WritableMap) {
-        val emitter: DeviceEventManagerModule.RCTDeviceEventEmitter = reactApplicationContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-        emitter.emit(eventName, params)
     }
 
     override fun getName(): String {

@@ -1,4 +1,8 @@
-import { type TurboModule, TurboModuleRegistry } from 'react-native';
+import {
+  type CodegenTypes,
+  type TurboModule,
+  TurboModuleRegistry,
+} from 'react-native';
 
 // Note: It would be better to have all these type definitions in a dedicated
 // module, however as of its current version RN's Codegen does not seem to handle
@@ -17,6 +21,10 @@ export type DownloadProgressCallbackResultT = {
   jobId: number; // The download job ID, required if one wishes to cancel the download. See `stopDownload`.
   contentLength: number; // The total size in bytes of the download resource
   bytesWritten: number; // The number of bytes written to the file so far
+};
+
+export type DownloadResumableCallbackResultT = {
+  jobId: number;
 };
 
 /**
@@ -76,12 +84,7 @@ export type DownloadFileOptionsT = {
 
   begin?: (res: DownloadBeginCallbackResultT) => void;
   progress?: (res: DownloadProgressCallbackResultT) => void;
-
-  // TODO: Yeah, original typing did not have "res" argument at all,
-  // but the code using this type actually passes an argument to
-  // resumable. Should be double-checked, if we have this argument,
-  // or drop it.
-  resumable?: (res: unknown) => void; // only supported on iOS yet
+  resumable?: (res: DownloadResumableCallbackResultT) => void; // only supported on iOS yet
 };
 
 export type DownloadResultT = {
@@ -223,8 +226,10 @@ export type UploadFileOptionsT = {
   method?: string; // Default is 'POST', supports 'POST' and 'PUT'
 
   // TODO: Remove these future versions.
-  beginCallback?: (res: UploadBeginCallbackArgT) => void; // deprecated
-  progressCallback?: (res: UploadProgressCallbackArgT) => void; // deprecated
+  /** @deprecated */
+  beginCallback?: (res: UploadBeginCallbackArgT) => void;
+  /** @deprecated */
+  progressCallback?: (res: UploadProgressCallbackArgT) => void;
 
   begin?: (res: UploadBeginCallbackArgT) => void;
   progress?: (res: UploadProgressCallbackArgT) => void;
@@ -288,6 +293,22 @@ export interface Spec extends TurboModule {
   };
 
   addListener(event: string): void;
+
+  readonly onDownloadBegin:
+    CodegenTypes.EventEmitter<DownloadBeginCallbackResultT>;
+
+  readonly onDownloadProgress:
+    CodegenTypes.EventEmitter<DownloadProgressCallbackResultT>;
+
+  readonly onDownloadResumable:
+    CodegenTypes.EventEmitter<DownloadResumableCallbackResultT>;
+
+  readonly onUploadBeing:
+    CodegenTypes.EventEmitter<UploadBeginCallbackArgT>;
+
+  readonly onUploadProgress:
+    CodegenTypes.EventEmitter<UploadProgressCallbackArgT>;
+
   removeListeners(count: number): void;
 
   // Common.
