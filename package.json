@@ -69,7 +69,6 @@
     "react": "19.2.3",
     "react-native": "0.84.0",
     "react-native-builder-bob": "^0.40.18",
-    "react-native-windows": "0.81.4",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {

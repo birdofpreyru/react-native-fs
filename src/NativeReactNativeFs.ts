@@ -303,7 +303,7 @@ export interface Spec extends TurboModule {
   readonly onDownloadResumable:
     CodegenTypes.EventEmitter<DownloadResumableCallbackResultT>;
 
-  readonly onUploadBeing:
+  readonly onUploadBegin:
     CodegenTypes.EventEmitter<UploadBeginCallbackArgT>;
 
   readonly onUploadProgress:
