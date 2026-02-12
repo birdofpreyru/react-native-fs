@@ -337,11 +337,11 @@ export function uploadFiles(options: UploadFileOptionsT): {
   }
 
   if (options.begin) {
-    subscriptions.push(RNFS.onUploadBeing(options.begin));
+    subscriptions.push(RNFS.onUploadBegin(options.begin));
 
   // TODO: Deprecated, will be removed in a future release.
   } else if (options.beginCallback) {
-    subscriptions.push(RNFS.onUploadBeing(options.beginCallback));
+    subscriptions.push(RNFS.onUploadBegin(options.beginCallback));
   }
 
   if (options.progress) {
