@@ -640,7 +640,6 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
 
   if (hasBeginCallback) {
     params.beginCallback = ^(NSNumber* statusCode, NSNumber* contentLength, NSDictionary* headers) {
-        if (self.bridge != nil)
             [self emitOnDownloadBegin:@{@"jobId": jobId,
                                                                                             @"statusCode": statusCode,
                                                                                             @"contentLength": contentLength,
@@ -650,7 +649,6 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
 
   if (hasProgressCallback) {
     params.progressCallback = ^(NSNumber* contentLength, NSNumber* bytesWritten) {
-        if (self.bridge != nil)
           [self emitOnDownloadProgress:@{@"jobId": jobId,
                                                           @"contentLength": contentLength,
                                                           @"bytesWritten": bytesWritten}];
@@ -659,7 +657,6 @@ RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptio
 
   if (hasResumableCallback) {
     params.resumableCallback = ^() {
-        if (self.bridge != nil)
             [self emitOnDownloadResumable:@{@"jobId": jobId}];
     };
   }
@@ -760,14 +757,12 @@ RCT_EXPORT_METHOD(uploadFiles:(JS::NativeReactNativeFs::NativeUploadFileOptionsT
 
   if (hasBeginCallback) {
     params.beginCallback = ^() {
-        if (self.bridge != nil)
           [self emitOnUploadBegin:@{@"jobId": jobId}];
     };
   }
 
   if (hasProgressCallback) {
     params.progressCallback = ^(NSNumber* totalBytesExpectedToSend, NSNumber* totalBytesSent) {
-        if (self.bridge != nil)
             [self emitOnUploadProgress:@{@"jobId": jobId,
                                                           @"totalBytesExpectedToSend": totalBytesExpectedToSend,
                                                           @"totalBytesSent": totalBytesSent}];

@@ -2209,7 +2209,7 @@ SPEC CHECKSUMS:
   ReactCommon: 92b53b0bd7f7d86154dc9f512c1ea5dee717cc72
   ReactNativeDependencies: a173622bfcd19f97cbf66d1d553671e0e500b66a
   ReactNativeFs: d3933093f8ddc509ff14dcce44da5bae75fff463
-  ReactNativeStaticServer: 4aa62ea00c406c2b518fee361a49a04d0e3d1e8f
+  ReactNativeStaticServer: 0f72c6b6bb2a1b8bff09decfef6fb3bb58e6135f
   Yoga: 772166513f9cd2d61a6251d0dacbbfaa5b537479
 
 PODFILE CHECKSUM: d88435961a235f49db1dcd0502f218a202e6bb75
