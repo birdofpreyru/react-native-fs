@@ -292,8 +292,6 @@ export interface Spec extends TurboModule {
     FileProtectionKeys?: string;
   };
 
-  addListener(event: string): void;
-
   readonly onDownloadBegin:
     CodegenTypes.EventEmitter<DownloadBeginCallbackResultT>;
 
@@ -308,8 +306,6 @@ export interface Spec extends TurboModule {
 
   readonly onUploadProgress:
     CodegenTypes.EventEmitter<UploadProgressCallbackArgT>;
-
-  removeListeners(count: number): void;
 
   // Common.
   appendFile(path: string, b64: string): Promise<void>;
