@@ -18,6 +18,7 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Storage.Pickers.h>
 #include <winrt/Windows.Storage.AccessCache.h>
+#include <Shobjidl.h>
 
 #include "RNFSException.h"
 
@@ -29,6 +30,56 @@ using namespace winrt::Windows::Storage::Streams;
 using namespace winrt::Windows::Storage::Pickers;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Web::Http;
+
+namespace {
+
+template <typename TPicker>
+bool TryInitializePickerWindow(TPicker const& picker)
+{
+    auto hwnd = ::GetActiveWindow();
+    if (!hwnd)
+    {
+        hwnd = ::GetForegroundWindow();
+        if (!hwnd)
+        {
+            return false;
+        }
+    }
+
+    auto initializeWithWindow{ picker.as<::IInitializeWithWindow>() };
+    winrt::check_hresult(initializeWithWindow->Initialize(hwnd));
+    return true;
+}
+
+std::string GetMainBundlePath() noexcept
+{
+    try
+    {
+        return to_string(Package::Current().InstalledLocation().Path());
+    }
+    catch (const hresult_error&)
+    {
+        std::wstring executablePath(MAX_PATH, L'\0');
+        DWORD length = ::GetModuleFileNameW(nullptr, executablePath.data(), static_cast<DWORD>(executablePath.size()));
+        while (length == executablePath.size())
+        {
+            executablePath.resize(executablePath.size() * 2);
+            length = ::GetModuleFileNameW(nullptr, executablePath.data(), static_cast<DWORD>(executablePath.size()));
+        }
+
+        if (length == 0)
+        {
+            return {};
+        }
+
+        executablePath.resize(length);
+        auto bundlePath = std::filesystem::path(executablePath).parent_path();
+        bundlePath.make_preferred();
+        return bundlePath.empty() ? std::string{} : winrt::to_string(winrt::hstring(bundlePath.c_str()));
+    }
+}
+
+}
 
 
 union touchTime {
@@ -153,7 +204,7 @@ void ReactNativeModule::Initialize(ReactContext const& reactContext) noexcept
 ReactNativeFsSpec_Constants ReactNativeModule::GetConstants() noexcept
 {
     ReactNativeFsSpec_Constants res;
-    res.MainBundlePath = to_string(Package::Current().InstalledLocation().Path());
+    res.MainBundlePath = GetMainBundlePath();
     res.CachesDirectoryPath = to_string(ApplicationData::Current().LocalCacheFolder().Path());
     res.DocumentDirectoryPath = to_string(ApplicationData::Current().LocalFolder().Path());
     res.DownloadDirectoryPath = to_string(UserDataPaths::GetDefault().Downloads());
@@ -1146,6 +1197,24 @@ void ReactNativeModule::pickFile(JSValueObject options, ReactPromise<JSValueArra
                 FolderPicker picker;
                 picker.SuggestedStartLocation(PickerLocationId::DocumentsLibrary);
                 picker.FileTypeFilter().Append(L"*");
+                try
+                {
+                    if (!TryInitializePickerWindow(picker))
+                    {
+                        promise.Reject("Failed to resolve the top-level window handle for the folder picker.");
+                        return;
+                    }
+                }
+                catch (const hresult_error& ex)
+                {
+                    promise.Reject(winrt::to_string(ex.message()).c_str());
+                    return;
+                }
+                catch (...)
+                {
+                    promise.Reject("Failed to initialize the folder picker window.");
+                    return;
+                }
 
                 picker.PickSingleFolderAsync().Completed([promise = std::move(promise)](IAsyncOperation<StorageFolder> const& operation, AsyncStatus const status) mutable {
                     try
@@ -1196,6 +1265,24 @@ void ReactNativeModule::pickFile(JSValueObject options, ReactPromise<JSValueArra
                 else
                 {
                     picker.FileTypeFilter().Append(L"*");
+                }
+                try
+                {
+                    if (!TryInitializePickerWindow(picker))
+                    {
+                        promise.Reject("Failed to resolve the top-level window handle for the file picker.");
+                        return;
+                    }
+                }
+                catch (const hresult_error& ex)
+                {
+                    promise.Reject(winrt::to_string(ex.message()).c_str());
+                    return;
+                }
+                catch (...)
+                {
+                    promise.Reject("Failed to initialize the file picker window.");
+                    return;
                 }
 
                 // single files

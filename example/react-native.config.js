@@ -15,6 +15,12 @@ module.exports = {
         // So we explicitly specify the platforms with empty object
         ios: {},
         android: {},
+        windows: {},
+      },
+    },
+    '@dr.pogodin/react-native-static-server': {
+      platforms: {
+        windows: null,
       },
     },
   },

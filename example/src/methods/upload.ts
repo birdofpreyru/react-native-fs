@@ -60,6 +60,7 @@ const UPLOAD_FILES_CONTROL = Platform.select({
 
 export const uploadTests: TestMethods = {
   'uploadFiles() should upload files': async () => {
+    if (Platform.OS === 'windows') return Result.notAvailable('windows');
     try {
       // prepare
       const server = await waitServer();
@@ -121,6 +122,7 @@ export const uploadTests: TestMethods = {
     }
   },
   'uploadFiles() should handle HTTP errors': async () => {
+    if (Platform.OS === 'windows') return Result.notAvailable('windows');
     try {
       // prepare
       const server = await waitServer();
@@ -154,6 +156,7 @@ export const uploadTests: TestMethods = {
     }
   },
   'stopUpload() should stop an upload process [iOS]': async () => {
+    if (Platform.OS === 'windows') return Result.notAvailable('windows');
     if (notPlatform('ios')) return Result.notAvailable('ios');
     const uploadFileName = 'upload-file-3.txt'; //! no support for ÄÖÜ
     try {
