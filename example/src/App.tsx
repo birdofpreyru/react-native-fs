@@ -38,6 +38,7 @@ const AppContent: FunctionComponent = () => {
         {/* This does not quite fit into the test app style,
         but I don't have time now to style the new test section well. */}
         <Button
+          color="blue"
           onPress={async () => {
             const res = await pickFile();
             Alert.alert(`Picked ${res.length} file(s)`, res.join('; '));

@@ -4,7 +4,7 @@ import {
   unlink,
 } from '@dr.pogodin/react-native-fs';
 
-import Server from '@dr.pogodin/react-native-static-server';
+import type StaticServer from '@dr.pogodin/react-native-static-server';
 import { Platform } from 'react-native';
 
 // NOTE: The path resolved for server by resolveAssetsPath()
@@ -14,9 +14,13 @@ export const FILE_DIR = Platform.select({
   default: `${TemporaryDirectoryPath}test-server`,
 });
 
-let serverPromise: Promise<Server> | undefined;
+let serverPromise: Promise<StaticServer> | undefined;
 
 export async function start() {
+  if (Platform.OS === 'windows') {
+    return undefined;
+  }
+
   if (!serverPromise) {
     serverPromise = new Promise(async (resolve, reject) => {
       try {
@@ -24,6 +28,9 @@ export async function start() {
           await unlink(FILE_DIR);
         } catch {}
         await mkdir(`${FILE_DIR}/dav`);
+        const Server = require(
+          '@dr.pogodin/react-native-static-server',
+        ).default as typeof import('@dr.pogodin/react-native-static-server').default;
         const server = new Server({
           fileDir: FILE_DIR,
           port: 3000,
@@ -59,6 +66,10 @@ export async function start() {
 }
 
 export async function stop() {
+  if (Platform.OS === 'windows') {
+    return;
+  }
+
   if (serverPromise) {
     const server = await serverPromise;
     await server.stop();
@@ -67,5 +78,11 @@ export async function stop() {
 }
 
 export async function waitServer() {
+  if (Platform.OS === 'windows') {
+    throw new Error(
+      '@dr.pogodin/react-native-static-server is disabled on Windows until it supports RNW new architecture.',
+    );
+  }
+
   return serverPromise || start();
 }
