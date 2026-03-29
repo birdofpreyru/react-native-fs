@@ -575,11 +575,6 @@ RCT_EXPORT_METHOD(copyFile:(NSString *)from
   }
 }
 
-- (NSArray<NSString *> *)supportedEvents
-{
-    return @[@"UploadBegin",@"UploadProgress",@"DownloadBegin",@"DownloadProgress",@"DownloadResumable"];
-}
-
 RCT_EXPORT_METHOD(downloadFile:(JS::NativeReactNativeFs::NativeDownloadFileOptionsT &)options
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
