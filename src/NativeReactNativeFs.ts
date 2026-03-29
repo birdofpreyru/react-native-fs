@@ -260,7 +260,7 @@ type TouchOptions = {
 };
 
 export interface Spec extends TurboModule {
-  readonly getConstants: () => {
+  getConstants(): {
     // System paths.
     CachesDirectoryPath: string;
     DocumentDirectoryPath: string;
