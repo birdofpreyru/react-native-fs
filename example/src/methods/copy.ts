@@ -95,7 +95,7 @@ export const copyTests: TestMethods = {
   },
   'copyFile() should copy folders too [non Windows]': async () => {
     if (notPlatform('ios', 'macos')) {
-      return Result.notAvailable('ios', 'macos');
+      return Result.onlyAvailableOn('ios', 'macos');
     }
 
     // TODO: It should be also tested and documented:
@@ -137,7 +137,7 @@ export const copyTests: TestMethods = {
     }
   },
   'copyFolder() should copy folders [WINDOWS]': async () => {
-    if (notPlatform('windows')) return Result.notAvailable('windows');
+    if (notPlatform('windows')) return Result.onlyAvailableOn('windows');
 
     // TODO: It should be also tested and documented:
     // -  How does it behave if the target item exists? Does it throw or
@@ -190,7 +190,7 @@ export const copyTests: TestMethods = {
     }
   },
   'copyFileAssets() should copy file assets [Android]': async () => {
-    if (notPlatform('android')) return Result.notAvailable('android');
+    if (notPlatform('android')) return Result.onlyAvailableOn('android');
 
     // prepare
     const target = PATH('copyFileAssets-target.txt');
@@ -211,7 +211,7 @@ export const copyTests: TestMethods = {
   },
   'copyFileAssets() should throw when copying file assets from invalid paths [Android]':
     async () => {
-      if (notPlatform('android')) return Result.notAvailable('android');
+      if (notPlatform('android')) return Result.onlyAvailableOn('android');
 
       // prepare
       const target = PATH('copyFileAssets-invalid-target.txt');
@@ -232,7 +232,7 @@ export const copyTests: TestMethods = {
   //! shouldn't the old tests be updated instead of adding new ones?
   'copyFileAssets() should copy file assets for the updated function behavior [Android] [NEW]':
     async () => {
-      if (notPlatform('android')) return Result.notAvailable('android');
+      if (notPlatform('android')) return Result.onlyAvailableOn('android');
 
       // prepare
       const copyFileAssetsNewPath = PATH('copyFileAssets-new');
@@ -252,7 +252,7 @@ export const copyTests: TestMethods = {
       }
     },
   'copyFileRes() should copy file resources [Android]': async () => {
-    if (notPlatform('android')) return Result.notAvailable('android');
+    if (notPlatform('android')) return Result.onlyAvailableOn('android');
 
     // prepare
     const target = PATH('copyFileRes-target.txt');

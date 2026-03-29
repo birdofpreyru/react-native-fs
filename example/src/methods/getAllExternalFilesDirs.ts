@@ -6,7 +6,7 @@ export const getAllExternalFilesDirsTests: TestMethods = {
   // TODO: This is not a very strict test.
   'getAllExternalFilesDirs() should return a list of all external directories [Android]':
     async () => {
-      if (notPlatform('android')) return Result.notAvailable('android');
+      if (notPlatform('android')) return Result.onlyAvailableOn('android');
 
       try {
         const res = await getAllExternalFilesDirs();

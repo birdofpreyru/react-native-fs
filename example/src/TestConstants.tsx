@@ -35,7 +35,7 @@ export default function TestConstants() {
 
         if (platforms && !platforms.includes(Platform.OS)) {
           status = !valid
-            ? Result.notAvailable(...platforms)
+            ? Result.onlyAvailableOn(...platforms)
             : Result.error(
                 `${pathKey} (${path}) should not be available on ${Platform.OS} but [${platforms.join(', ')}]`,
               );

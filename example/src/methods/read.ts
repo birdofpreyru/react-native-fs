@@ -185,7 +185,7 @@ export const readTests: TestMethods = {
   },
   "readDirAssets() should list assets' names from an asset directory [Android]":
     async () => {
-      if (notPlatform('android')) return Result.notAvailable('android');
+      if (notPlatform('android')) return Result.onlyAvailableOn('android');
       try {
         let assets = await readDirAssets('test');
 
@@ -265,7 +265,7 @@ export const readTests: TestMethods = {
     },
   'readFileAssets() should read an asset file from an asset directory [Android]':
     async () => {
-      if (notPlatform('android')) return Result.notAvailable('android');
+      if (notPlatform('android')) return Result.onlyAvailableOn('android');
       try {
         let res = await readFileAssets(TEST_ASSET_LATIN1_PATH, 'ascii');
         if (res !== CONTENT) {
@@ -301,7 +301,7 @@ export const readTests: TestMethods = {
       }
     },
   'readFileRes() should read a resource file [Android]': async () => {
-    if (notPlatform('android')) return Result.notAvailable('android');
+    if (notPlatform('android')) return Result.onlyAvailableOn('android');
     try {
       let res = await readFileRes('good_latin1.txt', 'ascii');
       if (res !== CONTENT) return Result.error(`ascii: ${res} !== ${CONTENT}`);
