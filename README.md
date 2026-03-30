@@ -191,11 +191,6 @@ of the library components.
 > fails with various errors due to bugs in `react-native-windows`. These errors
 > magically disappear on the build re-try, which completes successfully.
 
-**Note**: Windows auto-link command (at least as it was needed for example project to install the lib hosted in the parent folder):
-```sh
-npx react-native autolink-windows --sln "windows\ReactNativeFsExample.sln" --proj "windows\ReactNativeFsExample\ReactNativeFsExample.vcxproj"
-```
-
 ## Project History & Roadmap
 [Project History & Roadmap]: #project-history--roadmap
 
