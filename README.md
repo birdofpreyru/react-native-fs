@@ -63,6 +63,7 @@ Mac (Catalyst), and Windows platforms.
       the external files, shared directory.
     - [ExternalStorageDirectoryPath] &mdash; (Android) The absolute path to
       the external storage, shared directory.
+    - [FileProtectionKeys] &mdash; (iOS) File protection levels.
     - [LibraryDirectoryPath] &mdash; (iOS) The absolute path to
       the NSLibraryDirectory.
     - [MainBundlePath] &mdash; (non-Android) The absolute path to
@@ -142,6 +143,7 @@ Mac (Catalyst), and Windows platforms.
     - [DownloadResultT] &mdash; Return type of [downloadFile()].
     - [EncodingT] &mdash; Union of valid file encoding values.
     - [FileOptionsT] &mdash; Extra options for [copyFile()].
+    - [FileProtectionKeysT] &mdash; The type of [FileProtectionKeys] object.
     - [FSInfoResultT] &mdash; The type of result resolved by [getFSInfo()].
     - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
     - [PickFileOptionsT] &mdash; Optional parameters for [pickFile()].
@@ -457,6 +459,17 @@ const ExternalStorageDirectoryPath: string;
 The absolute path to the external storage, shared directory (android only).
 
 **BEWARE:** When using `ExternalStorageDirectoryPath` it's necessary to request permissions (on Android) to read and write on the external storage, here an example: [React Native Offical Doc](https://facebook.github.io/react-native/docs/permissionsandroid)
+
+### FileProtectionKeys
+[FileProtectionKeys]: #fileprotectionkeys
+```ts
+const FileProtectionKeys: FileProtectionKeysT;
+```
+**VERIFIED:** iOS. **NOT SUPPORTED:** Android, Windows.
+
+iOS-specific [file protection levels](https://developer.apple.com/documentation/foundation/fileprotectiontype).
+It is a [FileProtectionKeysT] object, which holds the values of four related
+constants.
 
 ### LibraryDirectoryPath
 [LibraryDirectoryPath]: #librarydirectorypath
@@ -1383,6 +1396,23 @@ The type of additional options for [copyFile()].
 
 - `NSFileProtectionKey` &mdash; **string** | **undefined** &mdash; Optional.
   iOS-only. See https://developer.apple.com/documentation/foundation/nsfileprotectionkey
+
+### FileProtectionKeysT
+[FileProtectionKeysT]: #fileprotectionkeyst
+```ts
+type FileProtectionKeysT = {
+  FileProtectionComplete: string;
+  FileProtectionCompleteUnlessOpen: string;
+  FileProtectionCompleteUntilFirstUserAuthentication: string;
+  FileProtectionNone: string;
+};
+```
+The type of [FileProtectionKeys] object. It holds the values of iOS file
+protection level constants:
+- [FileProtectionComplete](https://developer.apple.com/documentation/foundation/fileprotectiontype/complete)
+- [FileProtectionCompleteUnlessOpen](https://developer.apple.com/documentation/foundation/fileprotectiontype/completeunlessopen)
+- [FileProtectionCompleteUntilFirstUserAuthentication](https://developer.apple.com/documentation/foundation/fileprotectiontype/completeuntilfirstuserauthentication)
+- [FileProtectionNone](https://developer.apple.com/documentation/foundation/fileprotectiontype/none)
 
 ### FSInfoResultT
 [FSInfoResultT]: #fsinforesultt

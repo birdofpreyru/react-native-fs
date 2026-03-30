@@ -1058,26 +1058,34 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
   return [paths firstObject];
 }
 
-- (NSDictionary *)constantsToExport
+- (facebook::react::ModuleConstants<JS::NativeReactNativeFs::Constants>)constantsToExport
 {
-  return @{
-           @"MainBundlePath": [[NSBundle mainBundle] bundlePath],
-           @"CachesDirectoryPath": [self getPathForDirectory:NSCachesDirectory],
-           @"DocumentDirectoryPath": [self getPathForDirectory:NSDocumentDirectory],
-           @"ExternalDirectoryPath": [NSNull null],
-           @"ExternalStorageDirectoryPath": [NSNull null],
-           @"TemporaryDirectoryPath": NSTemporaryDirectory(),
-           @"LibraryDirectoryPath": [self getPathForDirectory:NSLibraryDirectory],
-           @"FileTypeRegular": NSURLFileResourceTypeRegular,
-           @"FileTypeDirectory": NSURLFileResourceTypeDirectory,
-           @"FileProtectionComplete": NSFileProtectionComplete,
-           @"FileProtectionCompleteUnlessOpen": NSFileProtectionCompleteUnlessOpen,
-           @"FileProtectionCompleteUntilFirstUserAuthentication": NSFileProtectionCompleteUntilFirstUserAuthentication,
-           @"FileProtectionNone": NSFileProtectionNone
-          };
+  return facebook::react::typedConstants<JS::NativeReactNativeFs::Constants>({
+    .CachesDirectoryPath = [self getPathForDirectory:NSCachesDirectory],
+    .DocumentDirectoryPath = [self getPathForDirectory:NSDocumentDirectory],
+    .DownloadDirectoryPath = @"",
+    .ExternalCachesDirectoryPath = @"",
+    .ExternalDirectoryPath = @"",
+    .ExternalStorageDirectoryPath = @"",
+    .MainBundlePath = [[NSBundle mainBundle] bundlePath],
+    .TemporaryDirectoryPath = NSTemporaryDirectory(),
+    .FileTypeRegular = NSURLFileResourceTypeRegular,
+    .FileTypeDirectory = NSURLFileResourceTypeDirectory,
+    .DocumentDirectory = 0,
+    .LibraryDirectoryPath = [self getPathForDirectory:NSLibraryDirectory],
+    .PicturesDirectoryPath = @"",
+    .RoamingDirectoryPath = @"",
+    .FileProtectionKeys = JS::NativeReactNativeFs::FileProtectionKeysT::Builder({
+      .FileProtectionComplete = NSFileProtectionComplete,
+      .FileProtectionCompleteUnlessOpen = NSFileProtectionCompleteUnlessOpen,
+      .FileProtectionCompleteUntilFirstUserAuthentication = NSFileProtectionCompleteUntilFirstUserAuthentication,
+      .FileProtectionNone = NSFileProtectionNone,
+    }),
+  });
 }
 
-- (NSDictionary *) getConstants {
+- (facebook::react::ModuleConstants<JS::NativeReactNativeFs::Constants>)getConstants
+{
   return [self constantsToExport];
 }
 

@@ -235,6 +235,13 @@ export type UploadFileOptionsT = {
   progress?: (res: UploadProgressCallbackArgT) => void;
 };
 
+export type FileProtectionKeysT = {
+  FileProtectionComplete: string;
+  FileProtectionCompleteUnlessOpen: string;
+  FileProtectionCompleteUntilFirstUserAuthentication: string;
+  FileProtectionNone: string;
+};
+
 export type NativeUploadFileOptionsT = {
   jobId: number;
   toUrl: string; // URL to upload file to
@@ -288,8 +295,8 @@ export interface Spec extends TurboModule {
     PicturesDirectoryPath?: string; // also on Android!
     RoamingDirectoryPath?: string;
 
-    // NON-ANDROID-STUFF, AND NOT DOCUMENTED
-    FileProtectionKeys?: string;
+    // iOS-only, not documented yet.
+    FileProtectionKeys?: FileProtectionKeysT;
   };
 
   readonly onDownloadBegin:
