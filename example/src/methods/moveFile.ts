@@ -47,7 +47,7 @@ export const moveFileTests: TestMethods = {
   },
   'moveFile() should move folders too [non Windows]': async () => {
     if (Platform.OS === 'windows') {
-      return Result.notAvailable('ios', 'macos', 'android');
+      return Result.onlyAvailableOn('ios', 'macos', 'android');
     }
 
     // TODO: It should be also tested and documented:

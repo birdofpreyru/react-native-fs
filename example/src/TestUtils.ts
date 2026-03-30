@@ -1,10 +1,12 @@
 import { unlink } from '@dr.pogodin/react-native-fs';
+
 import type {
   ErrorStatus,
   NotAvailableStatus,
   PendingStatus,
   SuccessStatus,
 } from './TestTypes';
+
 import { Platform, type PlatformOSType } from 'react-native';
 
 export const Result = {
@@ -21,9 +23,13 @@ export const Result = {
     message: message.join(' '),
   }),
   pending: (): PendingStatus => ({ type: 'pending' }),
-  notAvailable: (...platforms: PlatformOSType[]): NotAvailableStatus => ({
+  notAvailableOn: (...platforms: PlatformOSType[]): NotAvailableStatus => ({
     type: 'notAvailable',
-    message: `not available on ${Platform.OS} but [${platforms.join(', ')}]`,
+    message: `not available on ${platforms.join(', ')}`,
+  }),
+  onlyAvailableOn: (...platforms: PlatformOSType[]): NotAvailableStatus => ({
+    type: 'notAvailable',
+    message: `not available on ${Platform.OS}; but it available on [${platforms.join(', ')}]`,
   }),
 };
 

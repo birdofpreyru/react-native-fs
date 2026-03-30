@@ -60,6 +60,7 @@ const UPLOAD_FILES_CONTROL = Platform.select({
 
 export const uploadTests: TestMethods = {
   'uploadFiles() should upload files': async () => {
+    if (Platform.OS === 'windows') return Result.notAvailableOn('windows');
     try {
       // prepare
       const server = await waitServer();
@@ -99,7 +100,10 @@ export const uploadTests: TestMethods = {
       uploadedFile = uploadedFile.replace(/\r\n/g, '\n');
 
       // test
-      if (Platform.OS === 'windows' || Platform.OS === 'android') {
+      if (
+        // @ts-expect-error "This is because 'react-native-windows' might be not installed, to avoid conflicts with the latest RN"
+        Platform.OS === 'windows'
+        || Platform.OS === 'android') {
         uploadedFile = uploadedFile.replace(/-{4,}[a-f0-9-]+/g, 'boundary'); // replace random boundary with "boundary"
       }
       if (uploadedFile !== UPLOAD_FILES_CONTROL) {
@@ -121,6 +125,7 @@ export const uploadTests: TestMethods = {
     }
   },
   'uploadFiles() should handle HTTP errors': async () => {
+    if (Platform.OS === 'windows') return Result.notAvailableOn('windows');
     try {
       // prepare
       const server = await waitServer();
@@ -154,7 +159,7 @@ export const uploadTests: TestMethods = {
     }
   },
   'stopUpload() should stop an upload process [iOS]': async () => {
-    if (notPlatform('ios')) return Result.notAvailable('ios');
+    if (notPlatform('ios')) return Result.onlyAvailableOn('ios');
     const uploadFileName = 'upload-file-3.txt'; //! no support for ÄÖÜ
     try {
       // prepare

@@ -25,6 +25,7 @@ Mac (Catalyst), and Windows platforms.
 [<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
 
 ### [Contributors](https://github.com/birdofpreyru/react-native-fs/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/3824379?v=4&s=36" />](https://github.com/hsjoberg)
 [<img width=36 src="https://avatars.githubusercontent.com/u/5339870?v=4&s=36" />](https://github.com/dFelinger)
 [<img width=36 src="https://avatars.githubusercontent.com/u/23295962?v=4&s=36" />](https://github.com/tumerorkun)
 [<img width=36 src="https://avatars.githubusercontent.com/u/54746036?v=4&s=36" />](https://github.com/tero-paananen)
@@ -62,6 +63,7 @@ Mac (Catalyst), and Windows platforms.
       the external files, shared directory.
     - [ExternalStorageDirectoryPath] &mdash; (Android) The absolute path to
       the external storage, shared directory.
+    - [FileProtectionKeys] &mdash; (iOS) File protection levels.
     - [LibraryDirectoryPath] &mdash; (iOS) The absolute path to
       the NSLibraryDirectory.
     - [MainBundlePath] &mdash; (non-Android) The absolute path to
@@ -141,6 +143,7 @@ Mac (Catalyst), and Windows platforms.
     - [DownloadResultT] &mdash; Return type of [downloadFile()].
     - [EncodingT] &mdash; Union of valid file encoding values.
     - [FileOptionsT] &mdash; Extra options for [copyFile()].
+    - [FileProtectionKeysT] &mdash; The type of [FileProtectionKeys] object.
     - [FSInfoResultT] &mdash; The type of result resolved by [getFSInfo()].
     - [MkdirOptionsT] &mdash; Extra options for [mkdir()].
     - [PickFileOptionsT] &mdash; Optional parameters for [pickFile()].
@@ -165,8 +168,28 @@ Mac (Catalyst), and Windows platforms.
 
 Just install & use:
 ```sh
-$ npm install --save @dr.pogodin/react-native-fs
+npm install --save @dr.pogodin/react-native-fs
 ```
+
+[Example App]: https://github.com/birdofpreyru/react-native-fs/tree/master/example
+
+Note, the library repository includes [Example App] with demonstration and tests
+of the library components.
+
+> **BEWARE:** As of the library v2.28.0, to run [Example App] on **Windows**
+> you'll need to explicitly install `react-native-windows` both into the example
+> app, and into the root library code; execute in the root of the library code:
+>  ```sh
+>  yarn add react-native-windows
+>  yarn example add react-native-windows
+>  ```
+> `react-native-windows` is not currently listed as a dependency in `package.json`
+> files because the latest `react-native-windows@0.82` breaks Android builds if
+> installed alongside the latest `react-native@0.84`.
+>
+> Also, the first attempt to build [Example App] for **Windows** currently
+> fails with various errors due to bugs in `react-native-windows`. These errors
+> magically disappear on the build re-try, which completes successfully.
 
 **Note**: Windows auto-link command (at least as it was needed for example project to install the lib hosted in the parent folder):
 ```sh
@@ -456,6 +479,17 @@ const ExternalStorageDirectoryPath: string;
 The absolute path to the external storage, shared directory (android only).
 
 **BEWARE:** When using `ExternalStorageDirectoryPath` it's necessary to request permissions (on Android) to read and write on the external storage, here an example: [React Native Offical Doc](https://facebook.github.io/react-native/docs/permissionsandroid)
+
+### FileProtectionKeys
+[FileProtectionKeys]: #fileprotectionkeys
+```ts
+const FileProtectionKeys: FileProtectionKeysT;
+```
+**VERIFIED:** iOS. **NOT SUPPORTED:** Android, Windows.
+
+iOS-specific [file protection levels](https://developer.apple.com/documentation/foundation/fileprotectiontype).
+It is a [FileProtectionKeysT] object, which holds the values of four related
+constants.
 
 ### LibraryDirectoryPath
 [LibraryDirectoryPath]: #librarydirectorypath
@@ -1382,6 +1416,23 @@ The type of additional options for [copyFile()].
 
 - `NSFileProtectionKey` &mdash; **string** | **undefined** &mdash; Optional.
   iOS-only. See https://developer.apple.com/documentation/foundation/nsfileprotectionkey
+
+### FileProtectionKeysT
+[FileProtectionKeysT]: #fileprotectionkeyst
+```ts
+type FileProtectionKeysT = {
+  FileProtectionComplete: string;
+  FileProtectionCompleteUnlessOpen: string;
+  FileProtectionCompleteUntilFirstUserAuthentication: string;
+  FileProtectionNone: string;
+};
+```
+The type of [FileProtectionKeys] object. It holds the values of iOS file
+protection level constants:
+- [FileProtectionComplete](https://developer.apple.com/documentation/foundation/fileprotectiontype/complete)
+- [FileProtectionCompleteUnlessOpen](https://developer.apple.com/documentation/foundation/fileprotectiontype/completeunlessopen)
+- [FileProtectionCompleteUntilFirstUserAuthentication](https://developer.apple.com/documentation/foundation/fileprotectiontype/completeuntilfirstuserauthentication)
+- [FileProtectionNone](https://developer.apple.com/documentation/foundation/fileprotectiontype/none)
 
 ### FSInfoResultT
 [FSInfoResultT]: #fsinforesultt

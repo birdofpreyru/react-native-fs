@@ -85,7 +85,7 @@ export const downloadTests: TestMethods = {
   },
   // FOR THIS TEST TO RUN THE EXAMPLE APP SHOULD BE SENT TO THE BACKGROUND!
   'downloadFile() should download files in background [iOS]': async () => {
-    if (notPlatform('ios')) return Result.notAvailable('ios');
+    if (notPlatform('ios')) return Result.onlyAvailableOn('ios');
 
     // prepare
     const url =

@@ -6,7 +6,7 @@ export const pathForGroupTests: TestMethods = {
   // TODO: This is yet another dummy test, that should be enhanced (but not
   // a priority).
   'pathForGroup() should return shared group directories [iOS]': async () => {
-    if (notPlatform('ios')) return Result.notAvailable('ios');
+    if (notPlatform('ios')) return Result.onlyAvailableOn('ios');
 
     try {
       await pathForGroup('dummy-group');

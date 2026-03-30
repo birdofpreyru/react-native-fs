@@ -44,7 +44,6 @@ import java.util.ArrayDeque
 //  Note: Some input files use or override a deprecated API.
 //  Note: Recompile with -Xlint:deprecation for details.
 // It should be taken care of later.
-@ReactModule(name = ReactNativeFsModule.NAME)
 class ReactNativeFsModule(reactContext: ReactApplicationContext) :
   NativeReactNativeFsSpec(reactContext) {
     private val downloaders = SparseArray<Downloader>()
@@ -86,12 +85,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         return constants
     }
 
-    @ReactMethod
-    override fun addListener(eventName: String?) {
-        // NOOP
-    }
-
-    @ReactMethod
     override fun appendFile(filepath: String, base64Content: String?, promise: Promise) {
         try {
             getOutputStream(filepath, true).use { outputStream ->
@@ -108,7 +101,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun copyAssetsFileIOS(
             imageUri: String?,
             destPath: String?,
@@ -122,18 +114,15 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         Errors.NOT_IMPLEMENTED.reject(promise, "copyAssetsFileIOS()")
     }
 
-    @ReactMethod
     override fun copyAssetsVideoIOS(imageUri: String?, destPath: String?, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "copyAssetsVideoIOS()")
     }
 
-    @ReactMethod
     override fun completeHandlerIOS(jobId: Double) {
         // TODO: It is iOS-only. We need at least Promise here,
         // to reject.
     }
 
-    @ReactMethod
     override fun copyFile(filepath: String?, destPath: String?, options: ReadableMap?, promise: Promise) {
         object : CopyFileTask() {
             @Deprecated("Deprecated in Java")
@@ -148,7 +137,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }.execute(filepath, destPath)
     }
 
-    @ReactMethod
     override fun copyFileAssets(from: String, into: String, promise: Promise) {
       try {
         val manager: AssetManager = reactApplicationContext.assets
@@ -218,7 +206,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
       }
     }
 
-    @ReactMethod
     override fun copyFileRes(filename: String, destination: String, promise: Promise) {
         try {
             val res = getResIdentifier(filename)
@@ -230,12 +217,10 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     }
 
     // TODO: As of now it is meant to be Windows-only.
-    @ReactMethod
     override fun copyFolder(from: String?, to: String?, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "copyFolder()")
     }
 
-    @ReactMethod
     override fun downloadFile(options: ReadableMap, promise: Promise) {
         try {
             val file = File(options.getString("toFile")!!)
@@ -305,7 +290,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun exists(filepath: String, promise: Promise) {
         try {
             val file = File(filepath)
@@ -316,7 +300,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun existsAssets(filepath: String, promise: Promise) {
         try {
             val assetManager: AssetManager = reactApplicationContext.assets
@@ -342,7 +325,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun existsRes(filename: String, promise: Promise) {
         try {
             val res = getResIdentifier(filename)
@@ -357,7 +339,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun getAllExternalFilesDirs(promise: Promise) {
         val allExternalFilesDirs: Array<File> = this.reactApplicationContext.getExternalFilesDirs(null)
         val fs = Arguments.createArray()
@@ -367,7 +348,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         promise.resolve(fs)
     }
 
-    @ReactMethod
     override fun getFSInfo(promise: Promise) {
         val path = Environment.getDataDirectory()
         val stat = StatFs(path.path)
@@ -384,7 +364,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         promise.resolve(info)
     }
 
-    @ReactMethod
     override fun hash(filepath: String, algorithm: String, promise: Promise) {
         var inputStream: FileInputStream? = null
         try {
@@ -423,12 +402,10 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun isResumable(jobId: Double, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "isResumable()")
     }
 
-    @ReactMethod
     override fun mkdir(filepath: String, options: ReadableMap?, promise: Promise) {
         try {
             val file = File(filepath)
@@ -442,7 +419,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun moveFile(filepath: String, destPath: String, options: ReadableMap?, promise: Promise) {
         try {
             val inFile = File(filepath)
@@ -468,17 +444,14 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun pathForBundle(bundle: String?, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "pathForBundle()")
     }
 
-    @ReactMethod
     override fun pathForGroup(group: String?, promise: Promise?) {
         Errors.NOT_IMPLEMENTED.reject(promise, "pathForGroup()")
     }
 
-    @ReactMethod
     override fun pickFile(options: ReadableMap, promise: Promise) {
         val mimeTypesArray = options.getArray("mimeTypes")
         var mimeTypes = emptyArray<String>()
@@ -499,7 +472,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         getPickFileLauncher().launch(mimeTypes)
     }
 
-    @ReactMethod
     override fun read(
             filepath: String,
             length: Double,
@@ -520,7 +492,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun readDir(directory: String, promise: Promise) {
         try {
             val file = File(directory)
@@ -545,7 +516,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun readDirAssets(directory: String, promise: Promise) {
         try {
             val assetManager: AssetManager = reactApplicationContext.assets
@@ -577,7 +547,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun readFile(filepath: String, promise: Promise) {
         try {
             getInputStream(filepath).use { inputStream ->
@@ -596,7 +565,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun readFileAssets(filepath: String?, promise: Promise) {
         var stream: InputStream? = null
         try {
@@ -615,7 +583,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun readFileRes(filename: String, promise: Promise) {
         var stream: InputStream? = null
         try {
@@ -633,12 +600,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
-    override fun removeListeners(count: Double) {
-        // NOOP
-    }
-
-    @ReactMethod
     override fun resumeDownload(jobId: Double) {
         // TODO: This is currently iOS-only method,
         // and worse it does not return a promise,
@@ -646,7 +607,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         // At least add the Promise here.
     }
 
-    @ReactMethod
     override fun scanFile(path: String, promise: Promise) {
         MediaScannerConnection.scanFile(this.reactApplicationContext, arrayOf(path),
                 null,
@@ -659,7 +619,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         )
     }
 
-    @ReactMethod
     override fun setReadable(
             filepath: String,
             readable: Boolean,
@@ -677,7 +636,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun stat(filepath: String, promise: Promise) {
         try {
             val originalFilepath = getOriginalFilepath(filepath, true)
@@ -696,19 +654,16 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun stopDownload(jobId: Double) {
         val downloader = downloaders[jobId.toInt()]
         downloader?.stop()
     }
 
-    @ReactMethod
     override fun stopUpload(jobId: Double) {
         val uploader = uploaders[jobId.toInt()]
         uploader?.stop()
     }
 
-    @ReactMethod
     override fun touch(filepath: String, options: ReadableMap, promise: Promise) {
         try {
             val file = File(filepath)
@@ -723,7 +678,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun unlink(filepath: String, promise: Promise) {
         try {
             val file = File(filepath)
@@ -736,7 +690,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun uploadFiles(options: ReadableMap, promise: Promise) {
         try {
             val files = options.getArray("files")
@@ -806,7 +759,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     }
 
     // TODO: position arg should be double.
-    @ReactMethod
     override fun write(
             filepath: String,
             base64Content: String?,
@@ -837,7 +789,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    @ReactMethod
     override fun writeFile(filepath: String, base64Content: String?, options: ReadableMap?, promise: Promise) {
         try {
             getOutputStream(filepath, false).use { outputStream ->

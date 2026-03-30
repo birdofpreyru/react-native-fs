@@ -28,7 +28,7 @@ export const existsTests: TestMethods = {
     }
   },
   'existsAssets() should verify that asset files exist [Android]': async () => {
-    if (notPlatform('android')) return Result.notAvailable('android');
+    if (notPlatform('android')) return Result.onlyAvailableOn('android');
 
     try {
       if (!(await existsAssets(TEST_ASSET_UFT8_PATH))) {
@@ -44,7 +44,7 @@ export const existsTests: TestMethods = {
     }
   },
   'existsRes() should verify that resource files exist [Android]': async () => {
-    if (notPlatform('android')) return Result.notAvailable('android');
+    if (notPlatform('android')) return Result.onlyAvailableOn('android');
 
     try {
       if (!(await existsRes(TEST_ANDROID_RESOURCE_UTF8))) {

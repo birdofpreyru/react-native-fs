@@ -5,7 +5,7 @@ import { PATH } from '../TestValues';
 
 export const scanFileTests: TestMethods = {
   'scanFile() should scan a file [Android]': async () => {
-    if (notPlatform('android')) return Result.notAvailable('android');
+    if (notPlatform('android')) return Result.onlyAvailableOn('android');
     try {
       // prepare
       const path = PATH('scanFile');
