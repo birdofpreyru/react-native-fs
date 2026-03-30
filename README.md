@@ -168,8 +168,28 @@ Mac (Catalyst), and Windows platforms.
 
 Just install & use:
 ```sh
-$ npm install --save @dr.pogodin/react-native-fs
+npm install --save @dr.pogodin/react-native-fs
 ```
+
+[Example App]: https://github.com/birdofpreyru/react-native-fs/tree/master/example
+
+Note, the library repository includes [Example App] with demonstration and tests
+of the library components.
+
+> **BEWARE:** As of the library v2.28.0, to run [Example App] on **Windows**
+> you'll need to explicitly install `react-native-windows` both into the example
+> app, and into the root library code; execute in the root of the library code:
+>  ```sh
+>  yarn add react-native-windows
+>  yarn example add react-native-windows
+>  ```
+> `react-native-windows` is not currently listed as a dependency in `package.json`
+> files because the latest `react-native-windows@0.82` breaks Android builds if
+> installed alongside the latest `react-native@0.84`.
+>
+> Also, the first attempt to build [Example App] for **Windows** currently
+> fails with various errors due to bugs in `react-native-windows`. These errors
+> magically disappear on the build re-try, which completes successfully.
 
 **Note**: Windows auto-link command (at least as it was needed for example project to install the lib hosted in the parent folder):
 ```sh
