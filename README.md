@@ -25,6 +25,7 @@ Mac (Catalyst), and Windows platforms.
 [<img width=36 src="https://avatars.githubusercontent.com/u/10487241?s=36" />](https://github.com/Crare)
 
 ### [Contributors](https://github.com/birdofpreyru/react-native-fs/graphs/contributors)
+[<img width=36 src="https://avatars.githubusercontent.com/u/61206305?v=4&s=36" />](https://github.com/RayKay91)
 [<img width=36 src="https://avatars.githubusercontent.com/u/3824379?v=4&s=36" />](https://github.com/hsjoberg)
 [<img width=36 src="https://avatars.githubusercontent.com/u/5339870?v=4&s=36" />](https://github.com/dFelinger)
 [<img width=36 src="https://avatars.githubusercontent.com/u/23295962?v=4&s=36" />](https://github.com/tumerorkun)
