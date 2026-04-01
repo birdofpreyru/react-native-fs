@@ -1086,7 +1086,11 @@ RCT_EXPORT_METHOD(touch:(NSString*)filepath
 
 - (facebook::react::ModuleConstants<JS::NativeReactNativeFs::Constants>)getConstants
 {
-  return [self constantsToExport];
+  // NOTE: Although the explicit type cast below seems unnecessary,
+  // it has been reported that without it the library build fails for Expo,
+  // thus let's have it here for the foreseeable future;
+  // see: https://github.com/birdofpreyru/react-native-fs/issues/139
+  return (facebook::react::ModuleConstants<JS::NativeReactNativeFs::Constants>)[self constantsToExport];
 }
 
 - (void)copyFileAssets:(NSString *)from into:(NSString *)into resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
