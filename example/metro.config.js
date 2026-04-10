@@ -1,6 +1,6 @@
 const path = require('path');
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
-const {withMetroConfig} = require('react-native-monorepo-config');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { withMetroConfig } = require('react-native-monorepo-config');
 
 const fs = require('fs');
 
@@ -36,16 +36,18 @@ const config = withMetroConfig(getDefaultConfig(__dirname), {
 
 module.exports = mergeConfig(config, {
   resolver: {
-    blockList: normalizedRnwPath ? [
-      // This stops "npx @react-native-community/cli run-windows" from causing the metro server to crash if its already running
-      new RegExp(
-        `${path.resolve(__dirname, 'windows').replace(/[/\\]/g, '/')}.*`,
-      ),
-      // This prevents "npx @react-native-community/cli run-windows" from hitting: EBUSY: resource busy or locked, open msbuild.ProjectImports.zip or other files produced by msbuild
-      new RegExp(`${normalizedRnwPath}/build/.*`),
-      new RegExp(`${normalizedRnwPath}/target/.*`),
-      /.*\.ProjectImports\.zip/,
-    ] : null,
+    blockList: normalizedRnwPath
+      ? [
+          // This stops "npx @react-native-community/cli run-windows" from causing the metro server to crash if its already running
+          new RegExp(
+            `${path.resolve(__dirname, 'windows').replace(/[/\\]/g, '/')}.*`,
+          ),
+          // This prevents "npx @react-native-community/cli run-windows" from hitting: EBUSY: resource busy or locked, open msbuild.ProjectImports.zip or other files produced by msbuild
+          new RegExp(`${normalizedRnwPath}/build/.*`),
+          new RegExp(`${normalizedRnwPath}/target/.*`),
+          /.*\.ProjectImports\.zip/,
+        ]
+      : null,
   },
   transformer: {
     getTransformOptions: async () => ({

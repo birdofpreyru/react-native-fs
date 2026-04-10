@@ -963,12 +963,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         promise.reject("EISDIR", "EISDIR: illegal operation on a directory, read")
     }
 
-    override fun getName(): String {
-        return NAME
-    }
-
     companion object {
-        const val NAME = "ReactNativeFs"
+        const val NAME = NativeReactNativeFsSpec.NAME
 
         @Throws(IOException::class)
         private fun getInputStreamBytes(inputStream: InputStream): ByteArray {

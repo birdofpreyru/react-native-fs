@@ -29,9 +29,8 @@ export async function start() {
         } catch {}
         await mkdir(`${FILE_DIR}/dav`);
 
-        const {
-          default: Server,
-        } = await import('@dr.pogodin/react-native-static-server');
+        const { default: Server } =
+          await import('@dr.pogodin/react-native-static-server');
 
         const server = new Server({
           fileDir: FILE_DIR,

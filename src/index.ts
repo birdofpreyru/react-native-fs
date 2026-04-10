@@ -340,7 +340,7 @@ export function uploadFiles(options: UploadFileOptionsT): {
   if (options.begin) {
     subscriptions.push(RNFS.onUploadBegin(options.begin));
 
-  // TODO: Deprecated, will be removed in a future release.
+    // TODO: Deprecated, will be removed in a future release.
   } else if (options.beginCallback) {
     subscriptions.push(RNFS.onUploadBegin(options.beginCallback));
   }
@@ -348,12 +348,12 @@ export function uploadFiles(options: UploadFileOptionsT): {
   if (options.progress) {
     subscriptions.push(RNFS.onUploadProgress(options.progress));
 
-  // TODO: Deprecated, will be removed in a future release.
+    // TODO: Deprecated, will be removed in a future release.
   } else if (options.progressCallback) {
     subscriptions.push(RNFS.onUploadProgress(options.progressCallback));
   }
 
-  const files = options.files.map((item) => ({
+  const files = options.files.map(item => ({
     ...item,
     name: item.name ?? item.filename,
   }));

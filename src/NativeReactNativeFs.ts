@@ -299,20 +299,15 @@ export interface Spec extends TurboModule {
     FileProtectionKeys?: FileProtectionKeysT;
   };
 
-  readonly onDownloadBegin:
-    CodegenTypes.EventEmitter<DownloadBeginCallbackResultT>;
+  readonly onDownloadBegin: CodegenTypes.EventEmitter<DownloadBeginCallbackResultT>;
 
-  readonly onDownloadProgress:
-    CodegenTypes.EventEmitter<DownloadProgressCallbackResultT>;
+  readonly onDownloadProgress: CodegenTypes.EventEmitter<DownloadProgressCallbackResultT>;
 
-  readonly onDownloadResumable:
-    CodegenTypes.EventEmitter<DownloadResumableCallbackResultT>;
+  readonly onDownloadResumable: CodegenTypes.EventEmitter<DownloadResumableCallbackResultT>;
 
-  readonly onUploadBegin:
-    CodegenTypes.EventEmitter<UploadBeginCallbackArgT>;
+  readonly onUploadBegin: CodegenTypes.EventEmitter<UploadBeginCallbackArgT>;
 
-  readonly onUploadProgress:
-    CodegenTypes.EventEmitter<UploadProgressCallbackArgT>;
+  readonly onUploadProgress: CodegenTypes.EventEmitter<UploadProgressCallbackArgT>;
 
   // Common.
   appendFile(path: string, b64: string): Promise<void>;

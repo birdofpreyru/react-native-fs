@@ -102,8 +102,9 @@ export const uploadTests: TestMethods = {
       // test
       if (
         // @ts-expect-error "This is because 'react-native-windows' might be not installed, to avoid conflicts with the latest RN"
-        Platform.OS === 'windows'
-        || Platform.OS === 'android') {
+        Platform.OS === 'windows' ||
+        Platform.OS === 'android'
+      ) {
         uploadedFile = uploadedFile.replace(/-{4,}[a-f0-9-]+/g, 'boundary'); // replace random boundary with "boundary"
       }
       if (uploadedFile !== UPLOAD_FILES_CONTROL) {
