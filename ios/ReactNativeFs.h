@@ -1,6 +1,6 @@
 #import <ReactNativeFsSpec/ReactNativeFsSpec.h>
 
-@interface ReactNativeFs : NSObject <
+@interface ReactNativeFs : NativeReactNativeFsSpecBase <
   NativeReactNativeFsSpec
 #if !TARGET_OS_OSX
   , UIDocumentPickerDelegate
