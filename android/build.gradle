@@ -2,8 +2,7 @@ buildscript {
   ext.ReactNativeFs = [
     kotlinVersion: "2.0.21",
     minSdkVersion: 24,
-    compileSdkVersion: 36,
-    targetSdkVersion: 36
+    compileSdkVersion: 36
   ]
 
   ext.getExtOrDefault = { prop ->
@@ -39,26 +38,11 @@ android {
 
   defaultConfig {
     minSdkVersion getExtOrDefault("minSdkVersion")
-    targetSdkVersion getExtOrDefault("targetSdkVersion")
-  }
-
-  buildFeatures {
-    buildConfig true
-  }
-
-  buildTypes {
-    release {
-      minifyEnabled false
-    }
-  }
-
-  lint {
-    disable "GradleCompatible"
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
   }
 }
 
