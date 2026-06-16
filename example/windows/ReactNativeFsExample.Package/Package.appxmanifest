@@ -8,12 +8,12 @@
 
   <Identity
     Name="ReactNativeFsExample"
-    Publisher="CN=CocoT1"
+    Publisher="CN=drpog"
     Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>ReactNativeFsExample</DisplayName>
-    <PublisherDisplayName>CocoT1</PublisherDisplayName>
+    <PublisherDisplayName>drpog</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 

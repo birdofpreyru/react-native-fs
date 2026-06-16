@@ -4,23 +4,23 @@
     "native,Version=v0.0": {
       "boost": {
         "type": "Direct",
-        "requested": "[1.83.0, )",
-        "resolved": "1.83.0",
-        "contentHash": "cy53VNMzysEMvhBixDe8ujPk67Fcj3v6FPHQnH91NYJNLHpc6jxa2xq9ruCaaJjE4M3YrGSHDi4uUSTGBWw6EQ=="
+        "requested": "[1.84.0, )",
+        "resolved": "1.84.0",
+        "contentHash": "4el2YP3cNJDVFPdzOso+LxGvdWP2rHxML4siq8VdonNypW2m4q503tHfCj6vK0L1UfxioE2hpFGb4ITEua73tg=="
       },
       "Microsoft.ReactNative": {
         "type": "Direct",
-        "requested": "[0.82.3, )",
-        "resolved": "0.82.3",
-        "contentHash": "bDoRLLxBkq4k8u3EvZ05Th2gCP2Uy57lO5yGlBKi0toCu/aQFJOib5m/Pw8Tia7dGClL2PK3wj9MvA48leC4vQ=="
+        "requested": "[0.83.0, )",
+        "resolved": "0.83.0",
+        "contentHash": "hzy2GvNmntJnhTfRYcr4e0o/gNE13tybN7yD+u+svW1UNcL8ctCVnCkQrKdlyVQLYWcwlIILoQXhkI3Wnr0ArQ=="
       },
       "Microsoft.ReactNative.Cxx": {
         "type": "Direct",
-        "requested": "[0.82.3, )",
-        "resolved": "0.82.3",
-        "contentHash": "rrM3xBCD8ks1gqDO16zTpWqVs4Un58YrLRASV4+cV4u9vdWY1CDN4KLQS5GWnVw5LEF0OdPcx60HOsMMPiVcAw==",
+        "requested": "[0.83.0, )",
+        "resolved": "0.83.0",
+        "contentHash": "yK3kg5vyUJzpFGRJ6pVHP9dtHSpOKS9ikIAcz/9Qe4HRV5GtWissfm27f+xtolLN+DfNJ5nIT7ZXTM/cx5xjXQ==",
         "dependencies": {
-          "Microsoft.ReactNative": "0.82.3"
+          "Microsoft.ReactNative": "0.83.0"
         }
       },
       "Microsoft.VCRTForwarders.140": {

@@ -9,123 +9,45 @@
 #pragma once
 // clang-format off
 
+// #include "NativeReactNativeFsDataTypes.g.h" before this file to use the generated type definition
 #include <NativeModules.h>
 #include <tuple>
 
-namespace winrt::ReactNativeFs {
+namespace ReactNativeFsCodegen {
 
-struct ReactNativeFsSpec_DownloadResultT {
-    double jobId;
-    double statusCode;
-    double bytesWritten;
-};
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_DownloadBeginCallbackResultT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"jobId", &ReactNativeFsSpec_DownloadBeginCallbackResultT::jobId},
+        {L"statusCode", &ReactNativeFsSpec_DownloadBeginCallbackResultT::statusCode},
+        {L"contentLength", &ReactNativeFsSpec_DownloadBeginCallbackResultT::contentLength},
+        {L"headers", &ReactNativeFsSpec_DownloadBeginCallbackResultT::headers},
+    };
+    return fieldMap;
+}
 
-struct ReactNativeFsSpec_FSInfoResultT {
-    double totalSpace;
-    double totalSpaceEx;
-    double freeSpace;
-    double freeSpaceEx;
-};
-
-struct ReactNativeFsSpec_FileOptionsT {
-    std::optional<std::string> NSFileProtectionKey;
-};
-
-struct ReactNativeFsSpec_MkdirOptionsT {
-    std::optional<bool> NSURLIsExcludedFromBackupKey;
-    std::optional<std::string> NSFileProtectionKey;
-};
-
-struct ReactNativeFsSpec_NativeDownloadFileOptionsT {
-    double jobId;
-    std::string fromUrl;
-    std::string toFile;
-    bool background;
-    double backgroundTimeout;
-    bool cacheable;
-    double connectionTimeout;
-    bool discretionary;
-    ::React::JSValue headers;
-    double progressDivider;
-    double progressInterval;
-    double readTimeout;
-    bool hasBeginCallback;
-    bool hasProgressCallback;
-    bool hasResumableCallback;
-};
-
-struct ReactNativeFsSpec_NativeReadDirResItemT {
-    double ctime;
-    double mtime;
-    std::string name;
-    std::string path;
-    double size;
-    std::string type;
-};
-
-struct ReactNativeFsSpec_NativeStatResultT {
-    double ctime;
-    double mtime;
-    double size;
-    std::string type;
-    double mode;
-    std::string originalFilepath;
-};
-
-struct ReactNativeFsSpec_NativeUploadFileOptionsT {
-    double jobId;
-    std::string toUrl;
-    std::optional<bool> binaryStreamOnly;
-    ::React::JSValueArray files;
-    std::optional<::React::JSValue> headers;
-    std::optional<::React::JSValue> fields;
-    std::optional<std::string> method;
-    bool hasBeginCallback;
-    bool hasProgressCallback;
-};
-
-struct ReactNativeFsSpec_PickFileOptionsT {
-    std::vector<std::string> mimeTypes;
-    std::string pickerType;
-    ::React::JSValueArray fileExtensions;
-};
-
-struct ReactNativeFsSpec_TouchOptions {
-    std::optional<double> ctime;
-    std::optional<double> mtime;
-};
-
-struct ReactNativeFsSpec_UploadResultT {
-    double jobId;
-    double statusCode;
-    ::React::JSValue headers;
-    std::string body;
-};
-
-struct ReactNativeFsSpec_Constants {
-    std::string CachesDirectoryPath;
-    std::string DocumentDirectoryPath;
-    std::string DownloadDirectoryPath;
-    std::string ExternalCachesDirectoryPath;
-    std::string ExternalDirectoryPath;
-    std::string ExternalStorageDirectoryPath;
-    std::optional<std::string> MainBundlePath;
-    std::string TemporaryDirectoryPath;
-    std::string FileTypeRegular;
-    std::string FileTypeDirectory;
-    double DocumentDirectory;
-    std::optional<std::string> LibraryDirectoryPath;
-    std::optional<std::string> PicturesDirectoryPath;
-    std::optional<std::string> RoamingDirectoryPath;
-    std::optional<std::string> FileProtectionKeys;
-};
-
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_DownloadProgressCallbackResultT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"jobId", &ReactNativeFsSpec_DownloadProgressCallbackResultT::jobId},
+        {L"contentLength", &ReactNativeFsSpec_DownloadProgressCallbackResultT::contentLength},
+        {L"bytesWritten", &ReactNativeFsSpec_DownloadProgressCallbackResultT::bytesWritten},
+    };
+    return fieldMap;
+}
 
 inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_DownloadResultT*) noexcept {
     winrt::Microsoft::ReactNative::FieldMap fieldMap {
         {L"jobId", &ReactNativeFsSpec_DownloadResultT::jobId},
         {L"statusCode", &ReactNativeFsSpec_DownloadResultT::statusCode},
         {L"bytesWritten", &ReactNativeFsSpec_DownloadResultT::bytesWritten},
+        {L"headers", &ReactNativeFsSpec_DownloadResultT::headers},
+        {L"body", &ReactNativeFsSpec_DownloadResultT::body},
+    };
+    return fieldMap;
+}
+
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_DownloadResumableCallbackResultT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"jobId", &ReactNativeFsSpec_DownloadResumableCallbackResultT::jobId},
     };
     return fieldMap;
 }
@@ -143,6 +65,16 @@ inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_F
 inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_FileOptionsT*) noexcept {
     winrt::Microsoft::ReactNative::FieldMap fieldMap {
         {L"NSFileProtectionKey", &ReactNativeFsSpec_FileOptionsT::NSFileProtectionKey},
+    };
+    return fieldMap;
+}
+
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_FileProtectionKeysT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"FileProtectionComplete", &ReactNativeFsSpec_FileProtectionKeysT::FileProtectionComplete},
+        {L"FileProtectionCompleteUnlessOpen", &ReactNativeFsSpec_FileProtectionKeysT::FileProtectionCompleteUnlessOpen},
+        {L"FileProtectionCompleteUntilFirstUserAuthentication", &ReactNativeFsSpec_FileProtectionKeysT::FileProtectionCompleteUntilFirstUserAuthentication},
+        {L"FileProtectionNone", &ReactNativeFsSpec_FileProtectionKeysT::FileProtectionNone},
     };
     return fieldMap;
 }
@@ -232,6 +164,22 @@ inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_T
     return fieldMap;
 }
 
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_UploadBeginCallbackArgT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"jobId", &ReactNativeFsSpec_UploadBeginCallbackArgT::jobId},
+    };
+    return fieldMap;
+}
+
+inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_UploadProgressCallbackArgT*) noexcept {
+    winrt::Microsoft::ReactNative::FieldMap fieldMap {
+        {L"jobId", &ReactNativeFsSpec_UploadProgressCallbackArgT::jobId},
+        {L"totalBytesExpectedToSend", &ReactNativeFsSpec_UploadProgressCallbackArgT::totalBytesExpectedToSend},
+        {L"totalBytesSent", &ReactNativeFsSpec_UploadProgressCallbackArgT::totalBytesSent},
+    };
+    return fieldMap;
+}
+
 inline winrt::Microsoft::ReactNative::FieldMap GetStructInfo(ReactNativeFsSpec_UploadResultT*) noexcept {
     winrt::Microsoft::ReactNative::FieldMap fieldMap {
         {L"jobId", &ReactNativeFsSpec_UploadResultT::jobId},
@@ -268,46 +216,49 @@ struct ReactNativeFsSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
       TypedConstant<ReactNativeFsSpec_Constants>{0},
   };
   static constexpr auto methods = std::tuple{
-      Method<void(std::string) noexcept>{0, L"addListener"},
-      Method<void(double) noexcept>{1, L"removeListeners"},
-      Method<void(std::string, std::string, Promise<void>) noexcept>{2, L"appendFile"},
-      Method<void(std::string, std::string, ReactNativeFsSpec_FileOptionsT, Promise<void>) noexcept>{3, L"copyFile"},
-      Method<void(ReactNativeFsSpec_NativeDownloadFileOptionsT, Promise<ReactNativeFsSpec_DownloadResultT>) noexcept>{4, L"downloadFile"},
-      Method<void(std::string, Promise<bool>) noexcept>{5, L"exists"},
-      Method<void(Promise<ReactNativeFsSpec_FSInfoResultT>) noexcept>{6, L"getFSInfo"},
-      Method<void(std::string, std::string, Promise<std::string>) noexcept>{7, L"hash"},
-      Method<void(std::string, ReactNativeFsSpec_MkdirOptionsT, Promise<void>) noexcept>{8, L"mkdir"},
-      Method<void(std::string, std::string, ReactNativeFsSpec_FileOptionsT, Promise<void>) noexcept>{9, L"moveFile"},
-      Method<void(ReactNativeFsSpec_PickFileOptionsT, Promise<std::vector<std::string>>) noexcept>{10, L"pickFile"},
-      Method<void(std::string, double, double, Promise<std::string>) noexcept>{11, L"read"},
-      Method<void(std::string, Promise<std::string>) noexcept>{12, L"readFile"},
-      Method<void(std::string, Promise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>>) noexcept>{13, L"readDir"},
-      Method<void(std::string, Promise<ReactNativeFsSpec_NativeStatResultT>) noexcept>{14, L"stat"},
-      Method<void(double) noexcept>{15, L"stopDownload"},
-      Method<void(double) noexcept>{16, L"stopUpload"},
-      Method<void(std::string, ReactNativeFsSpec_TouchOptions, Promise<void>) noexcept>{17, L"touch"},
-      Method<void(std::string, Promise<void>) noexcept>{18, L"unlink"},
-      Method<void(ReactNativeFsSpec_NativeUploadFileOptionsT, Promise<ReactNativeFsSpec_UploadResultT>) noexcept>{19, L"uploadFiles"},
-      Method<void(std::string, std::string, double, Promise<void>) noexcept>{20, L"write"},
-      Method<void(std::string, std::string, ReactNativeFsSpec_FileOptionsT, Promise<void>) noexcept>{21, L"writeFile"},
-      Method<void(std::string, std::string, Promise<void>) noexcept>{22, L"copyFileAssets"},
-      Method<void(std::string, std::string, Promise<void>) noexcept>{23, L"copyFileRes"},
-      Method<void(std::string, Promise<bool>) noexcept>{24, L"existsAssets"},
-      Method<void(std::string, Promise<bool>) noexcept>{25, L"existsRes"},
-      Method<void(Promise<std::vector<std::string>>) noexcept>{26, L"getAllExternalFilesDirs"},
-      Method<void(std::string, Promise<std::string>) noexcept>{27, L"readFileAssets"},
-      Method<void(std::string, Promise<std::string>) noexcept>{28, L"readFileRes"},
-      Method<void(std::string, Promise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>>) noexcept>{29, L"readDirAssets"},
-      Method<void(std::string, Promise<std::optional<std::string>>) noexcept>{30, L"scanFile"},
-      Method<void(std::string, bool, bool, Promise<bool>) noexcept>{31, L"setReadable"},
-      Method<void(std::string, std::string, double, double, double, double, std::string, Promise<std::string>) noexcept>{32, L"copyAssetsFileIOS"},
-      Method<void(std::string, std::string, Promise<std::string>) noexcept>{33, L"copyAssetsVideoIOS"},
-      Method<void(double) noexcept>{34, L"completeHandlerIOS"},
-      Method<void(double, Promise<bool>) noexcept>{35, L"isResumable"},
-      Method<void(std::string, Promise<std::string>) noexcept>{36, L"pathForBundle"},
-      Method<void(std::string, Promise<std::string>) noexcept>{37, L"pathForGroup"},
-      Method<void(double) noexcept>{38, L"resumeDownload"},
-      Method<void(std::string, std::string, Promise<void>) noexcept>{39, L"copyFolder"},
+      Method<void(std::string, std::string, Promise<void>) noexcept>{0, L"appendFile"},
+      Method<void(std::string, std::string, ReactNativeFsSpec_FileOptionsT, Promise<void>) noexcept>{1, L"copyFile"},
+      Method<void(ReactNativeFsSpec_NativeDownloadFileOptionsT, Promise<ReactNativeFsSpec_DownloadResultT>) noexcept>{2, L"downloadFile"},
+      Method<void(std::string, Promise<bool>) noexcept>{3, L"exists"},
+      Method<void(Promise<ReactNativeFsSpec_FSInfoResultT>) noexcept>{4, L"getFSInfo"},
+      Method<void(std::string, std::string, Promise<std::string>) noexcept>{5, L"hash"},
+      Method<void(std::string, ReactNativeFsSpec_MkdirOptionsT, Promise<void>) noexcept>{6, L"mkdir"},
+      Method<void(std::string, std::string, ReactNativeFsSpec_FileOptionsT, Promise<void>) noexcept>{7, L"moveFile"},
+      Method<void(ReactNativeFsSpec_PickFileOptionsT, Promise<std::vector<std::string>>) noexcept>{8, L"pickFile"},
+      Method<void(std::string, double, double, Promise<std::string>) noexcept>{9, L"read"},
+      Method<void(std::string, Promise<std::string>) noexcept>{10, L"readFile"},
+      Method<void(std::string, Promise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>>) noexcept>{11, L"readDir"},
+      Method<void(std::string, Promise<ReactNativeFsSpec_NativeStatResultT>) noexcept>{12, L"stat"},
+      Method<void(double) noexcept>{13, L"stopDownload"},
+      Method<void(double) noexcept>{14, L"stopUpload"},
+      Method<void(std::string, ReactNativeFsSpec_TouchOptions, Promise<void>) noexcept>{15, L"touch"},
+      Method<void(std::string, Promise<void>) noexcept>{16, L"unlink"},
+      Method<void(ReactNativeFsSpec_NativeUploadFileOptionsT, Promise<ReactNativeFsSpec_UploadResultT>) noexcept>{17, L"uploadFiles"},
+      Method<void(std::string, std::string, double, Promise<void>) noexcept>{18, L"write"},
+      Method<void(std::string, std::string, ReactNativeFsSpec_FileOptionsT, Promise<void>) noexcept>{19, L"writeFile"},
+      Method<void(std::string, std::string, Promise<void>) noexcept>{20, L"copyFileAssets"},
+      Method<void(std::string, std::string, Promise<void>) noexcept>{21, L"copyFileRes"},
+      Method<void(std::string, Promise<bool>) noexcept>{22, L"existsAssets"},
+      Method<void(std::string, Promise<bool>) noexcept>{23, L"existsRes"},
+      Method<void(Promise<std::vector<std::string>>) noexcept>{24, L"getAllExternalFilesDirs"},
+      Method<void(std::string, Promise<std::string>) noexcept>{25, L"readFileAssets"},
+      Method<void(std::string, Promise<std::string>) noexcept>{26, L"readFileRes"},
+      Method<void(std::string, Promise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>>) noexcept>{27, L"readDirAssets"},
+      Method<void(std::string, Promise<std::optional<std::string>>) noexcept>{28, L"scanFile"},
+      Method<void(std::string, bool, bool, Promise<bool>) noexcept>{29, L"setReadable"},
+      Method<void(std::string, std::string, double, double, double, double, std::string, Promise<std::string>) noexcept>{30, L"copyAssetsFileIOS"},
+      Method<void(std::string, std::string, Promise<std::string>) noexcept>{31, L"copyAssetsVideoIOS"},
+      Method<void(double) noexcept>{32, L"completeHandlerIOS"},
+      Method<void(double, Promise<bool>) noexcept>{33, L"isResumable"},
+      Method<void(std::string, Promise<std::string>) noexcept>{34, L"pathForBundle"},
+      Method<void(std::string, Promise<std::string>) noexcept>{35, L"pathForGroup"},
+      Method<void(double) noexcept>{36, L"resumeDownload"},
+      Method<void(std::string, std::string, Promise<void>) noexcept>{37, L"copyFolder"},
+      EventEmitter<void(ReactNativeFsSpec_DownloadBeginCallbackResultT)>{38, L"onDownloadBegin"},
+      EventEmitter<void(ReactNativeFsSpec_DownloadProgressCallbackResultT)>{39, L"onDownloadProgress"},
+      EventEmitter<void(ReactNativeFsSpec_DownloadResumableCallbackResultT)>{40, L"onDownloadResumable"},
+      EventEmitter<void(ReactNativeFsSpec_UploadBeginCallbackArgT)>{41, L"onUploadBegin"},
+      EventEmitter<void(ReactNativeFsSpec_UploadProgressCallbackArgT)>{42, L"onUploadProgress"},
   };
 
   template <class TModule>
@@ -323,205 +274,215 @@ struct ReactNativeFsSpec : winrt::Microsoft::ReactNative::TurboModuleSpec {
 
     REACT_SHOW_METHOD_SPEC_ERRORS(
           0,
-          "addListener",
-          "    REACT_METHOD(addListener) void addListener(std::string event) noexcept { /* implementation */ }\n"
-          "    REACT_METHOD(addListener) static void addListener(std::string event) noexcept { /* implementation */ }\n");
-    REACT_SHOW_METHOD_SPEC_ERRORS(
-          1,
-          "removeListeners",
-          "    REACT_METHOD(removeListeners) void removeListeners(double count) noexcept { /* implementation */ }\n"
-          "    REACT_METHOD(removeListeners) static void removeListeners(double count) noexcept { /* implementation */ }\n");
-    REACT_SHOW_METHOD_SPEC_ERRORS(
-          2,
           "appendFile",
           "    REACT_METHOD(appendFile) void appendFile(std::string path, std::string b64, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(appendFile) static void appendFile(std::string path, std::string b64, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          3,
+          1,
           "copyFile",
           "    REACT_METHOD(copyFile) void copyFile(std::string from, std::string into, ReactNativeFsSpec_FileOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(copyFile) static void copyFile(std::string from, std::string into, ReactNativeFsSpec_FileOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          4,
+          2,
           "downloadFile",
           "    REACT_METHOD(downloadFile) void downloadFile(ReactNativeFsSpec_NativeDownloadFileOptionsT && options, ::React::ReactPromise<ReactNativeFsSpec_DownloadResultT> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(downloadFile) static void downloadFile(ReactNativeFsSpec_NativeDownloadFileOptionsT && options, ::React::ReactPromise<ReactNativeFsSpec_DownloadResultT> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          5,
+          3,
           "exists",
           "    REACT_METHOD(exists) void exists(std::string path, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(exists) static void exists(std::string path, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          6,
+          4,
           "getFSInfo",
           "    REACT_METHOD(getFSInfo) void getFSInfo(::React::ReactPromise<ReactNativeFsSpec_FSInfoResultT> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(getFSInfo) static void getFSInfo(::React::ReactPromise<ReactNativeFsSpec_FSInfoResultT> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          7,
+          5,
           "hash",
           "    REACT_METHOD(hash) void hash(std::string path, std::string algorithm, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(hash) static void hash(std::string path, std::string algorithm, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          8,
+          6,
           "mkdir",
           "    REACT_METHOD(mkdir) void mkdir(std::string path, ReactNativeFsSpec_MkdirOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(mkdir) static void mkdir(std::string path, ReactNativeFsSpec_MkdirOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          9,
+          7,
           "moveFile",
           "    REACT_METHOD(moveFile) void moveFile(std::string from, std::string into, ReactNativeFsSpec_FileOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(moveFile) static void moveFile(std::string from, std::string into, ReactNativeFsSpec_FileOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          10,
+          8,
           "pickFile",
           "    REACT_METHOD(pickFile) void pickFile(ReactNativeFsSpec_PickFileOptionsT && options, ::React::ReactPromise<std::vector<std::string>> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(pickFile) static void pickFile(ReactNativeFsSpec_PickFileOptionsT && options, ::React::ReactPromise<std::vector<std::string>> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          11,
+          9,
           "read",
           "    REACT_METHOD(read) void read(std::string path, double length, double position, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(read) static void read(std::string path, double length, double position, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          12,
+          10,
           "readFile",
           "    REACT_METHOD(readFile) void readFile(std::string path, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(readFile) static void readFile(std::string path, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          13,
+          11,
           "readDir",
           "    REACT_METHOD(readDir) void readDir(std::string path, ::React::ReactPromise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(readDir) static void readDir(std::string path, ::React::ReactPromise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          14,
+          12,
           "stat",
           "    REACT_METHOD(stat) void stat(std::string path, ::React::ReactPromise<ReactNativeFsSpec_NativeStatResultT> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(stat) static void stat(std::string path, ::React::ReactPromise<ReactNativeFsSpec_NativeStatResultT> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          15,
+          13,
           "stopDownload",
           "    REACT_METHOD(stopDownload) void stopDownload(double jobId) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(stopDownload) static void stopDownload(double jobId) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          16,
+          14,
           "stopUpload",
           "    REACT_METHOD(stopUpload) void stopUpload(double jobId) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(stopUpload) static void stopUpload(double jobId) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          17,
+          15,
           "touch",
           "    REACT_METHOD(touch) void touch(std::string path, ReactNativeFsSpec_TouchOptions && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(touch) static void touch(std::string path, ReactNativeFsSpec_TouchOptions && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          18,
+          16,
           "unlink",
           "    REACT_METHOD(unlink) void unlink(std::string path, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(unlink) static void unlink(std::string path, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          19,
+          17,
           "uploadFiles",
           "    REACT_METHOD(uploadFiles) void uploadFiles(ReactNativeFsSpec_NativeUploadFileOptionsT && options, ::React::ReactPromise<ReactNativeFsSpec_UploadResultT> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(uploadFiles) static void uploadFiles(ReactNativeFsSpec_NativeUploadFileOptionsT && options, ::React::ReactPromise<ReactNativeFsSpec_UploadResultT> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          20,
+          18,
           "write",
           "    REACT_METHOD(write) void write(std::string path, std::string b64, double position, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(write) static void write(std::string path, std::string b64, double position, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          21,
+          19,
           "writeFile",
           "    REACT_METHOD(writeFile) void writeFile(std::string path, std::string b64, ReactNativeFsSpec_FileOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(writeFile) static void writeFile(std::string path, std::string b64, ReactNativeFsSpec_FileOptionsT && options, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          22,
+          20,
           "copyFileAssets",
           "    REACT_METHOD(copyFileAssets) void copyFileAssets(std::string from, std::string into, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(copyFileAssets) static void copyFileAssets(std::string from, std::string into, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          23,
+          21,
           "copyFileRes",
           "    REACT_METHOD(copyFileRes) void copyFileRes(std::string from, std::string into, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(copyFileRes) static void copyFileRes(std::string from, std::string into, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          24,
+          22,
           "existsAssets",
           "    REACT_METHOD(existsAssets) void existsAssets(std::string path, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(existsAssets) static void existsAssets(std::string path, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          25,
+          23,
           "existsRes",
           "    REACT_METHOD(existsRes) void existsRes(std::string path, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(existsRes) static void existsRes(std::string path, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          26,
+          24,
           "getAllExternalFilesDirs",
           "    REACT_METHOD(getAllExternalFilesDirs) void getAllExternalFilesDirs(::React::ReactPromise<std::vector<std::string>> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(getAllExternalFilesDirs) static void getAllExternalFilesDirs(::React::ReactPromise<std::vector<std::string>> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          27,
+          25,
           "readFileAssets",
           "    REACT_METHOD(readFileAssets) void readFileAssets(std::string path, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(readFileAssets) static void readFileAssets(std::string path, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          28,
+          26,
           "readFileRes",
           "    REACT_METHOD(readFileRes) void readFileRes(std::string path, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(readFileRes) static void readFileRes(std::string path, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          29,
+          27,
           "readDirAssets",
           "    REACT_METHOD(readDirAssets) void readDirAssets(std::string path, ::React::ReactPromise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(readDirAssets) static void readDirAssets(std::string path, ::React::ReactPromise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          30,
+          28,
           "scanFile",
           "    REACT_METHOD(scanFile) void scanFile(std::string path, ::React::ReactPromise<std::optional<std::string>> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(scanFile) static void scanFile(std::string path, ::React::ReactPromise<std::optional<std::string>> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          31,
+          29,
           "setReadable",
           "    REACT_METHOD(setReadable) void setReadable(std::string filepath, bool readable, bool ownerOnly, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(setReadable) static void setReadable(std::string filepath, bool readable, bool ownerOnly, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          32,
+          30,
           "copyAssetsFileIOS",
           "    REACT_METHOD(copyAssetsFileIOS) void copyAssetsFileIOS(std::string imageUri, std::string destPath, double width, double height, double scale, double compression, std::string resizeMode, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(copyAssetsFileIOS) static void copyAssetsFileIOS(std::string imageUri, std::string destPath, double width, double height, double scale, double compression, std::string resizeMode, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          33,
+          31,
           "copyAssetsVideoIOS",
           "    REACT_METHOD(copyAssetsVideoIOS) void copyAssetsVideoIOS(std::string imageUri, std::string destPath, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(copyAssetsVideoIOS) static void copyAssetsVideoIOS(std::string imageUri, std::string destPath, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          34,
+          32,
           "completeHandlerIOS",
           "    REACT_METHOD(completeHandlerIOS) void completeHandlerIOS(double jobId) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(completeHandlerIOS) static void completeHandlerIOS(double jobId) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          35,
+          33,
           "isResumable",
           "    REACT_METHOD(isResumable) void isResumable(double jobId, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(isResumable) static void isResumable(double jobId, ::React::ReactPromise<bool> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          36,
+          34,
           "pathForBundle",
           "    REACT_METHOD(pathForBundle) void pathForBundle(std::string bundle, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(pathForBundle) static void pathForBundle(std::string bundle, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          37,
+          35,
           "pathForGroup",
           "    REACT_METHOD(pathForGroup) void pathForGroup(std::string group, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(pathForGroup) static void pathForGroup(std::string group, ::React::ReactPromise<std::string> &&result) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          38,
+          36,
           "resumeDownload",
           "    REACT_METHOD(resumeDownload) void resumeDownload(double jobId) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(resumeDownload) static void resumeDownload(double jobId) noexcept { /* implementation */ }\n");
     REACT_SHOW_METHOD_SPEC_ERRORS(
-          39,
+          37,
           "copyFolder",
           "    REACT_METHOD(copyFolder) void copyFolder(std::string from, std::string into, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n"
           "    REACT_METHOD(copyFolder) static void copyFolder(std::string from, std::string into, ::React::ReactPromise<void> &&result) noexcept { /* implementation */ }\n");
+    REACT_SHOW_EVENTEMITTER_SPEC_ERRORS(
+          38,
+          "onDownloadBegin",
+          "    REACT_EVENT(onDownloadBegin) std::function<void(ReactNativeFsSpec_DownloadBeginCallbackResultT)> onDownloadBegin;\n");
+    REACT_SHOW_EVENTEMITTER_SPEC_ERRORS(
+          39,
+          "onDownloadProgress",
+          "    REACT_EVENT(onDownloadProgress) std::function<void(ReactNativeFsSpec_DownloadProgressCallbackResultT)> onDownloadProgress;\n");
+    REACT_SHOW_EVENTEMITTER_SPEC_ERRORS(
+          40,
+          "onDownloadResumable",
+          "    REACT_EVENT(onDownloadResumable) std::function<void(ReactNativeFsSpec_DownloadResumableCallbackResultT)> onDownloadResumable;\n");
+    REACT_SHOW_EVENTEMITTER_SPEC_ERRORS(
+          41,
+          "onUploadBegin",
+          "    REACT_EVENT(onUploadBegin) std::function<void(ReactNativeFsSpec_UploadBeginCallbackArgT)> onUploadBegin;\n");
+    REACT_SHOW_EVENTEMITTER_SPEC_ERRORS(
+          42,
+          "onUploadProgress",
+          "    REACT_EVENT(onUploadProgress) std::function<void(ReactNativeFsSpec_UploadProgressCallbackArgT)> onUploadProgress;\n");
   }
 };
 
-} // namespace winrt::ReactNativeFs
+} // namespace ReactNativeFsCodegen

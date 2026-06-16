@@ -4,7 +4,7 @@
   <ItemGroup>
     <!-- Projects from @dr.pogodin/react-native-fs -->
     <ProjectReference Include="$(ProjectDir)..\..\..\windows\ReactNativeFs\ReactNativeFs.vcxproj">
-      <Project>{FF3DF7A0-409B-42D7-BA2C-931CC8B60F06}</Project>
+      <Project>{8666D5AB-B3E2-4A35-BF4B-02114EE24382}</Project>
     </ProjectReference>
   </ItemGroup>
 </Project>

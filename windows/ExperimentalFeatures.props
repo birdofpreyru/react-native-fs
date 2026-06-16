@@ -5,7 +5,10 @@
     <!--
       Required for building a New Architecture project.
 
-      App projects should not change this value.
+      Library projects can change this value to test against Old and New
+      Architectures when building the library project's local sln file.
+      
+      Otherwise this value will be decided by the consuming RNW app.
 
       See https://microsoft.github.io/react-native-windows/docs/new-architecture
     -->
@@ -15,7 +18,10 @@
       Changes compilation to assume use of Microsoft.ReactNative NuGet packages
       instead of building the framework from source. Defaults to true.
 
-      This is set during app project creation and should not be changed.
+      This is set during library project creation and is used when building
+      the library project's local sln file.
+
+      Otherwise this value will be decided by the consuming RNW app.
 
       See https://microsoft.github.io/react-native-windows/docs/nuget
     -->

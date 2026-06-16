@@ -1,8 +1,6 @@
-// Copyright (C) Microsoft Corporation. All rights reserved.
-
 #include "pch.h"
 
-#include "ReactNativeModule.h"
+#include "ReactNativeFs.h"
 
 #include <filesystem>
 #include <sstream>
@@ -23,7 +21,6 @@
 #include "RNFSException.h"
 
 using namespace winrt;
-using namespace winrt::ReactNativeFs;
 using namespace winrt::Windows::ApplicationModel;
 using namespace winrt::Windows::Storage;
 using namespace winrt::Windows::Storage::Streams;
@@ -31,8 +28,10 @@ using namespace winrt::Windows::Storage::Pickers;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Web::Http;
 
-namespace {
+namespace winrt::ReactNativeFs
+{
 
+// See https://microsoft.github.io/react-native-windows/docs/native-platform for help writing native modules
 template <typename TPicker>
 bool TryInitializePickerWindow(TPicker const& picker)
 {
@@ -78,9 +77,6 @@ std::string GetMainBundlePath() noexcept
         return bundlePath.empty() ? std::string{} : winrt::to_string(winrt::hstring(bundlePath.c_str()));
     }
 }
-
-}
-
 
 union touchTime {
     int64_t initialTime;
@@ -192,16 +188,14 @@ static inline HANDLE safe_handle(HANDLE h) noexcept
     return (h == INVALID_HANDLE_VALUE) ? nullptr : h;
 }
 
-void ReactNativeModule::Initialize(ReactContext const& reactContext) noexcept
-{
-    m_reactContext = reactContext;
+void ReactNativeFs::Initialize(React::ReactContext const &reactContext) noexcept {
+  m_context = reactContext;
 }
-
 
 //
 // RNFS implementations
 //
-ReactNativeFsSpec_Constants ReactNativeModule::GetConstants() noexcept
+ReactNativeFsSpec_Constants ReactNativeFs::GetConstants() noexcept
 {
     ReactNativeFsSpec_Constants res;
     res.MainBundlePath = GetMainBundlePath();
@@ -218,7 +212,11 @@ ReactNativeFsSpec_Constants ReactNativeModule::GetConstants() noexcept
     return res;
 }
 
-winrt::fire_and_forget ReactNativeModule::mkdir(std::wstring directory, JSValueObject options, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::mkdir(
+  std::wstring directory,
+  ReactNativeFsSpec_MkdirOptionsT options,
+  ReactPromise<void> promise
+) noexcept
 try
 {
     size_t pathLength{ directory.length() };
@@ -266,8 +264,12 @@ catch (const hresult_error& ex)
     promise.Reject( winrt::to_string(ex.message()).c_str() );
 }
 
-
-winrt::fire_and_forget ReactNativeModule::moveFile(std::wstring srcPath, std::wstring destPath, JSValueObject options, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::moveFile(
+  std::wstring srcPath,
+  std::wstring destPath,
+  ReactNativeFsSpec_FileOptionsT options,
+  ReactPromise<void> promise
+) noexcept
 try
 {
     winrt::hstring srcDirectoryPath, srcFileName;
@@ -290,8 +292,12 @@ catch (const hresult_error& ex)
     promise.Reject(winrt::to_string(ex.message()).c_str());
 }
 
-
-winrt::fire_and_forget ReactNativeModule::copyFile(std::wstring srcPath, std::wstring destPath, JSValueObject options, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::copyFile(
+  std::wstring srcPath,
+  std::wstring destPath,
+  ReactNativeFsSpec_FileOptionsT options,
+  ReactPromise<void> promise
+) noexcept
 try
 {
     winrt::hstring srcDirectoryPath, srcFileName;
@@ -314,8 +320,92 @@ catch (const hresult_error& ex)
     promise.Reject(winrt::to_string(ex.message()).c_str());
 }
 
+void ReactNativeFs::copyFileAssets(std::string from, std::string into, ::React::ReactPromise<void>&& result) noexcept {
+  result.Reject("Not implemented");
+}
 
-winrt::fire_and_forget ReactNativeModule::copyFolder(
+void ReactNativeFs::copyFileRes(std::string from, std::string into, ::React::ReactPromise<void>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::existsAssets(std::string path, ::React::ReactPromise<bool>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::existsRes(std::string path, ::React::ReactPromise<bool>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::getAllExternalFilesDirs(::React::ReactPromise<std::vector<std::string>>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::readFileAssets(std::string path, ::React::ReactPromise<std::string>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::readFileRes(std::string path, ::React::ReactPromise<std::string>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::readDirAssets(
+  std::string path,
+  ::React::ReactPromise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>>&& result
+) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::scanFile(std::string path, ::React::ReactPromise<std::optional<std::string>>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::setReadable(
+  std::string filepath,
+  bool readable,
+  bool ownerOnly,
+  ::React::ReactPromise<bool>&& result
+) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::copyAssetsFileIOS(
+  std::string imageUri,
+  std::string destPath,
+  double width,
+  double height,
+  double scale,
+  double compression,
+  std::string resizeMode,
+  ::React::ReactPromise<std::string>&& result
+) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::copyAssetsVideoIOS(
+  std::string imageUri,
+  std::string destPath,
+  ::React::ReactPromise<std::string>&& result
+) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::completeHandlerIOS(double jobId) noexcept {}
+
+void ReactNativeFs::isResumable(double jobId, ::React::ReactPromise<bool>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::pathForBundle(std::string bundle, ::React::ReactPromise<std::string>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::pathForGroup(std::string group, ::React::ReactPromise<std::string>&& result) noexcept {
+  result.Reject("Not implemented");
+}
+
+void ReactNativeFs::resumeDownload(double jobId) noexcept {}
+
+winrt::fire_and_forget ReactNativeFs::copyFolder(
     std::wstring srcFolderPath,
     std::wstring destFolderPath,
     ReactPromise<void> promise) noexcept
@@ -354,7 +444,7 @@ catch (const hresult_error& ex)
     promise.Reject(winrt::to_string(ex.message()).c_str());
 }
 
-winrt::fire_and_forget ReactNativeModule::copyFolderHelper(
+winrt::fire_and_forget ReactNativeFs::copyFolderHelper(
     winrt::Windows::Storage::StorageFolder src,
     winrt::Windows::Storage::StorageFolder dest) noexcept
 try
@@ -380,16 +470,17 @@ catch (...)
     co_return;
 }
 
-
-winrt::fire_and_forget ReactNativeModule::getFSInfo(ReactPromise<JSValueObject> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::getFSInfo(
+  ReactPromise<ReactNativeFsSpec_FSInfoResultT> promise
+) noexcept
 try
 {
     auto localFolder{ Windows::Storage::ApplicationData::Current().LocalFolder() };
     auto properties{ co_await localFolder.Properties().RetrievePropertiesAsync({L"System.FreeSpace", L"System.Capacity"}) };
 
-    JSValueObject result;
-    result["freeSpace"] = unbox_value<uint64_t>(properties.Lookup(L"System.FreeSpace"));
-    result["totalSpace"] = unbox_value<uint64_t>(properties.Lookup(L"System.Capacity"));
+    ReactNativeFsSpec_FSInfoResultT result;
+    result.freeSpace = unbox_value<uint64_t>(properties.Lookup(L"System.FreeSpace"));
+    result.totalSpace = unbox_value<uint64_t>(properties.Lookup(L"System.Capacity"));
 
     promise.Resolve(result);
 }
@@ -399,8 +490,7 @@ catch (const hresult_error& ex)
     promise.Reject(winrt::to_string(ex.message()).c_str());
 }
 
-
-winrt::fire_and_forget ReactNativeModule::unlink(std::wstring filePath, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::unlink(std::wstring filePath, ReactPromise<void> promise) noexcept
 try
 {
     size_t pathLength{ filePath.length() };
@@ -429,13 +519,13 @@ catch (const hresult_error& ex)
     }
     else
     {
-        // "Failed to unlink file" 
+        // "Failed to unlink file"
         promise.Reject( winrt::to_string(ex.message()).c_str() );
     }
 }
 
 
-winrt::fire_and_forget ReactNativeModule::exists(std::wstring filePath, ReactPromise<bool> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::exists(std::wstring filePath, ReactPromise<bool> promise) noexcept
 try
 {
     size_t fileLength{ filePath.length() };
@@ -467,19 +557,19 @@ catch (const hresult_error& ex)
 }
 
 
-void ReactNativeModule::stopDownload(int32_t jobID) noexcept
+void ReactNativeFs::stopDownload(double jobID) noexcept
 {
     m_tasks.Cancel(jobID);
 }
 
 
-void ReactNativeModule::stopUpload(int32_t jobID) noexcept
+void ReactNativeFs::stopUpload(double jobID) noexcept
 {
     m_tasks.Cancel(jobID);
 }
 
 
-winrt::fire_and_forget ReactNativeModule::readFile(std::wstring filePath, ReactPromise<std::string> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::readFile(std::wstring filePath, ReactPromise<std::string> promise) noexcept
 try
 {
     winrt::hstring directoryPath, fileName;
@@ -511,7 +601,10 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::stat(std::wstring filePath, ReactPromise<JSValueObject> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::stat(
+  std::wstring filePath,
+  ReactPromise<ReactNativeFsSpec_NativeStatResultT> promise
+) noexcept
 try
 {
     size_t pathLength{ filePath.length() };
@@ -528,11 +621,11 @@ try
         IStorageItem item{ co_await folder.GetItemAsync(path.filename().wstring()) };
 
         auto properties{ co_await item.GetBasicPropertiesAsync() };
-        JSValueObject fileInfo;
-        fileInfo["ctime"] = winrt::clock::to_time_t(item.DateCreated());
-        fileInfo["mtime"] = winrt::clock::to_time_t(properties.DateModified());
-        fileInfo["size"] = std::to_string(properties.Size());
-        fileInfo["type"] = item.IsOfType(StorageItemTypes::Folder) ? "1" : "0";
+        ReactNativeFsSpec_NativeStatResultT fileInfo;
+        fileInfo.ctime = winrt::clock::to_time_t(item.DateCreated());
+        fileInfo.mtime = winrt::clock::to_time_t(properties.DateModified());
+        fileInfo.size = properties.Size();
+        fileInfo.type = item.IsOfType(StorageItemTypes::Folder) ? "1" : "0";
         promise.Resolve(fileInfo);
     }
 }
@@ -541,28 +634,30 @@ catch (...)
     promise.Reject(ReactError{ "ENOENT", "ENOENT: no such file or directory, open " + winrt::to_string(filePath) });
 }
 
-
-winrt::fire_and_forget ReactNativeModule::readDir(std::wstring directory, ReactPromise<JSValueArray> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::readDir(
+  std::wstring directory,
+  ::React::ReactPromise<std::vector<ReactNativeFsSpec_NativeReadDirResItemT>> promise
+) noexcept
 try
 {
     std::filesystem::path path(directory);
     path.make_preferred();
     StorageFolder targetDirectory{ co_await StorageFolder::GetFolderFromPathAsync(path.c_str()) };
 
-    JSValueArray resultsArray;
+    std::vector<ReactNativeFsSpec_NativeReadDirResItemT> resultsArray;
 
     auto items{ co_await targetDirectory.GetItemsAsync() };
     for (auto item : items)
     {
         auto properties{ co_await item.GetBasicPropertiesAsync() };
 
-        JSValueObject itemInfo;
-        itemInfo["ctime"] = winrt::clock::to_time_t(targetDirectory.DateCreated());
-        itemInfo["mtime"] = winrt::clock::to_time_t(properties.DateModified());
-        itemInfo["name"] = to_string(item.Name());
-        itemInfo["path"] = to_string(item.Path());
-        itemInfo["size"] = properties.Size();
-        itemInfo["type"] = item.IsOfType(StorageItemTypes::Folder) ? "1" : "0";
+        ReactNativeFsSpec_NativeReadDirResItemT itemInfo;
+        itemInfo.ctime = winrt::clock::to_time_t(targetDirectory.DateCreated());
+        itemInfo.mtime = winrt::clock::to_time_t(properties.DateModified());
+        itemInfo.name = to_string(item.Name());
+        itemInfo.path = to_string(item.Path());
+        itemInfo.size = properties.Size();
+        itemInfo.type = item.IsOfType(StorageItemTypes::Folder) ? "1" : "0";
 
         resultsArray.push_back(std::move(itemInfo));
     }
@@ -575,8 +670,12 @@ catch (const hresult_error& ex)
     promise.Reject(winrt::to_string(ex.message()).c_str());
 }
 
-
-winrt::fire_and_forget ReactNativeModule::read(std::wstring filePath, uint32_t length, uint64_t position, ReactPromise<std::string> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::read(
+  std::wstring filePath,
+  double length,
+  double position,
+  ::React::ReactPromise<std::string> promise
+) noexcept
 try
 {
     winrt::hstring directoryPath, fileName;
@@ -585,7 +684,7 @@ try
     StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
     StorageFile file{ co_await folder.GetFileAsync(fileName) };
 
-    Streams::Buffer buffer{ length };
+    Streams::Buffer buffer{ static_cast<uint32_t>(length) };
 
     Streams::IRandomAccessStream stream{ co_await file.OpenReadAsync() };
     stream.Seek(position);
@@ -606,7 +705,7 @@ catch (const hresult_error& ex)
     {
         promise.Reject(ReactError{"EISDIR", "EISDIR: Could not open file for reading" });
     }
-    else 
+    else
     {
         // "Failed to read from file."
         promise.Reject(winrt::to_string(ex.message()).c_str());
@@ -614,10 +713,10 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::hash(std::wstring filePath, std::string algorithm, ReactPromise<std::string> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::hash(std::wstring filePath, std::string algorithm, ReactPromise<std::string> promise) noexcept
 try
 {
-    // Note: SHA224 is not part of winrt 
+    // Note: SHA224 is not part of winrt
     if (algorithm.compare("sha224") == 0)
     {
         promise.Reject(ReactError{ "Error", "WinRT does not offer sha224 encryption." });
@@ -663,8 +762,12 @@ catch (const hresult_error& ex)
     }
 }
 
-
-winrt::fire_and_forget ReactNativeModule::writeFile(std::wstring filePath, std::wstring base64Content, JSValueObject options, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::writeFile(
+  std::wstring filePath,
+  std::wstring base64Content,
+  ReactNativeFsSpec_FileOptionsT options,
+  ReactPromise<void> promise
+) noexcept
 try
 {
     winrt::hstring base64ContentStr{ base64Content };
@@ -696,7 +799,7 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::appendFile(std::wstring filePath, std::wstring base64Content, ReactPromise<void> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::appendFile(std::wstring filePath, std::wstring base64Content, ReactPromise<void> promise) noexcept
 try
 {
     size_t fileLength = filePath.length();
@@ -731,7 +834,13 @@ catch (const hresult_error& ex)
         promise.Reject(winrt::to_string(ex.message()).c_str());
     }
 }
-winrt::fire_and_forget ReactNativeModule::write(std::wstring filePath, std::wstring base64Content, int position, ReactPromise<void> promise) noexcept
+
+winrt::fire_and_forget ReactNativeFs::write(
+  std::wstring filePath,
+  std::wstring base64Content,
+  double position,
+  ReactPromise<void> promise
+) noexcept
 try
 {
     winrt::hstring directoryPath, fileName;
@@ -770,14 +879,17 @@ catch (const hresult_error& ex)
 }
 
 
-winrt::fire_and_forget ReactNativeModule::downloadFile(JSValueObject options, ReactPromise<JSValueObject> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::downloadFile(
+  ReactNativeFsSpec_NativeDownloadFileOptionsT options,
+  ReactPromise<ReactNativeFsSpec_DownloadResultT> promise
+) noexcept
 {
     //JobID
-    auto jobId{ options["jobId"].AsInt32() };
+    auto jobId{ options.jobId };
     try
     {
         //Filepath
-        std::wstring filePath = winrt::to_hstring(options["toFile"].AsString()).c_str();
+        std::wstring filePath = winrt::to_hstring(options.toFile).c_str();
         std::filesystem::path path(filePath);
         path.make_preferred();
         if (path.filename().empty())
@@ -787,18 +899,18 @@ winrt::fire_and_forget ReactNativeModule::downloadFile(JSValueObject options, Re
         }
 
         //URL
-        std::string fromURLString{ options["fromUrl"].AsString() };
+        std::string fromURLString{ options.fromUrl };
         auto URLForURI = winrt::to_hstring(fromURLString);
         Uri uri{ URLForURI };
 
         //Headers
-        auto const& headers{ options["headers"].AsObject() };
+        auto const& headers{ options.headers.AsObject() };
 
         //Progress Interval
-        auto progressInterval{ options["progressInterval"].AsInt64() };
+        auto progressInterval{ static_cast<uint64_t>(options.progressInterval) };
 
         //Progress Divider
-        auto progressDivider{ options["progressDivider"].AsInt64() };
+        auto progressDivider{ static_cast<uint64_t>(options.progressDivider) };
 
         winrt::Windows::Web::Http::HttpRequestMessage request{ winrt::Windows::Web::Http::HttpMethod::Get(), uri };
         Buffer buffer{ 8 * 1024 };
@@ -816,19 +928,22 @@ winrt::fire_and_forget ReactNativeModule::downloadFile(JSValueObject options, Re
     }
     catch (const hresult_error& ex)
     {
-        // "Failed to download file." 
+        // "Failed to download file."
         promise.Reject(winrt::to_string(ex.message()).c_str());
     }
     m_tasks.Cancel(jobId);
 }
 
 
-winrt::fire_and_forget ReactNativeModule::uploadFiles(JSValueObject options, ReactPromise<JSValueObject> promise) noexcept
+winrt::fire_and_forget ReactNativeFs::uploadFiles(
+  ReactNativeFsSpec_NativeUploadFileOptionsT options,
+  ReactPromise<ReactNativeFsSpec_UploadResultT> promise
+) noexcept
 {
-    auto jobId{ options["jobId"].AsInt32() };
+    auto jobId{ options.jobId };
     try
     {
-        auto method{ options["method"].AsString() };
+        auto method = options.method.value_or("");
 
         winrt::Windows::Web::Http::HttpMethod httpMethod{ winrt::Windows::Web::Http::HttpMethod::Post() };
         if (method.compare("POST") != 0)
@@ -844,7 +959,7 @@ winrt::fire_and_forget ReactNativeModule::uploadFiles(JSValueObject options, Rea
             }
         }
 
-        auto const& files{ options["files"].AsArray() };
+        auto const& files{ options.files };
         uint64_t totalUploadSize = 0;
         for (const auto& fileInfo : files)
         {
@@ -878,11 +993,13 @@ winrt::fire_and_forget ReactNativeModule::uploadFiles(JSValueObject options, Rea
     m_tasks.Cancel(jobId);
 }
 
-
-void ReactNativeModule::touch(std::wstring filePath, int64_t mtime, int64_t ctime, bool modifyCreationTime, ReactPromise<std::string> promise) noexcept
+void ReactNativeFs::touch(
+  std::wstring filePath,
+  ReactNativeFsSpec_TouchOptions&& options,
+  ReactPromise<void>&& promise
+) noexcept
 try
 {
-
     std::filesystem::path path(filePath);
     path.make_preferred();
     auto s_path{ path.c_str() };
@@ -898,14 +1015,21 @@ try
         return;
     }
 
-    touchTime mtime_64{ mtime * 10000 + UNIX_EPOCH_IN_WINRT_INTERVAL };
+    touchTime mtime_64{ options.mtime.value_or(0) * 10000 + UNIX_EPOCH_IN_WINRT_INTERVAL };
     FILETIME mFileTime;
     mFileTime.dwLowDateTime = mtime_64.splitTime[0];
     mFileTime.dwHighDateTime = mtime_64.splitTime[1];
 
+    /*
+    * TODO: Prior to v2.39.0 the Windows implementation of touch() used to accept an additional argument,
+    * "modifyCreationTime", which was not actually present in the TS definition of touch(). With changes
+    * in v2.39.0, the Codegen and related typechecks captured that inconsistence, and for now I am just
+    * commenting out this block, as if "modifyCreationTime" is not there. Perhaps, later, we should
+    * re-wire this argument correctly.
+    *
     if (modifyCreationTime)
     {
-        touchTime ctime_64{ ctime * 10000 + UNIX_EPOCH_IN_WINRT_INTERVAL };
+        touchTime ctime_64{ options.ctime.value_or(0) * 10000 + UNIX_EPOCH_IN_WINRT_INTERVAL };
         FILETIME cFileTime;
         cFileTime.dwLowDateTime = ctime_64.splitTime[0];
         cFileTime.dwHighDateTime = ctime_64.splitTime[1];
@@ -921,15 +1045,18 @@ try
     }
     else
     {
+    */
         if (SetFileTime(handle.get(), nullptr, nullptr, &mFileTime) == 0)
         {
             promise.Reject("Failed to set new creation time and modified time of file.");
         }
         else
         {
-            promise.Resolve(winrt::to_string(s_path));
+            // TODO: It used to resolve a value, but it wasn't in TS definition... check later,
+            // if we should wire it up with the return value on all systems, or just remove for good?
+            promise.Resolve(/* winrt::to_string(s_path) */);
         }
-    }
+    // }
 }
 catch (const hresult_error& ex)
 {
@@ -946,7 +1073,7 @@ catch (const hresult_error& ex)
 }
 
 
-void ReactNativeModule::splitPath(const std::wstring& filePath, winrt::hstring& directoryPath, winrt::hstring& fileName) noexcept
+void ReactNativeFs::splitPath(const std::wstring& filePath, winrt::hstring& directoryPath, winrt::hstring& fileName) noexcept
 {
     std::filesystem::path path(filePath);
     path.make_preferred();
@@ -955,10 +1082,14 @@ void ReactNativeModule::splitPath(const std::wstring& filePath, winrt::hstring& 
     fileName = path.has_filename() ? winrt::to_hstring(path.filename().c_str()) : L"";
 }
 
-
-IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValueObject> promise,
-    winrt::Windows::Web::Http::HttpRequestMessage request, std::wstring_view filePath, int32_t jobId, int64_t progressInterval, int64_t progressDivider)
-{
+IAsyncAction ReactNativeFs::ProcessDownloadRequestAsync(
+  ReactPromise<ReactNativeFsSpec_DownloadResultT>& promise,
+  winrt::Windows::Web::Http::HttpRequestMessage request,
+  std::wstring_view filePath,
+  double jobId,
+  int64_t progressInterval,
+  int64_t progressDivider
+) {
     try
     {
         HttpResponseMessage response = co_await m_httpClient.SendRequestAsync(request, HttpCompletionOption::ResponseHeadersRead);
@@ -992,7 +1123,7 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
 
         auto contentStream = co_await response.Content().ReadAsInputStreamAsync();
         auto contentLengthForProgress = contentLength && contentLength.Type() == PropertyType::UInt64 ? contentLength.Value() : -1;
-        
+
         Buffer buffer{ 8 * 1024 };
         uint32_t read = 0;
         int64_t initialProgressTime{ winrt::clock::now().time_since_epoch().count() / 10000 };
@@ -1017,7 +1148,7 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
                 currentProgressTime = winrt::clock::now().time_since_epoch().count() / 10000;
                 if(currentProgressTime - initialProgressTime >= progressInterval)
                 {
-                    m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
+                    m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
                         JSValueObject{
                             { "jobId", jobId },
                             { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
@@ -1029,7 +1160,7 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
             }
             else if (progressDivider <= 0)
             {
-                m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
+                m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
                     JSValueObject{
                         { "jobId", jobId },
                         { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
@@ -1041,7 +1172,7 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
             {
                 if (totalRead * 100 / contentLengthForProgress >= progressDividerUnsigned ||
                     totalRead == contentLengthForProgress) {
-                    m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
+                    m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
                         JSValueObject{
                             { "jobId", jobId },
                             { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
@@ -1052,12 +1183,12 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
             }
         }
 
-        promise.Resolve(JSValueObject
-            {
-                { "jobId", jobId },
-                { "statusCode", (int)response.StatusCode() },
-                { "bytesWritten", totalRead },
-            });
+        ReactNativeFsSpec_DownloadResultT result;
+        result.jobId = jobId;
+        result.statusCode = (int)response.StatusCode();
+        result.bytesWritten = totalRead;
+
+        promise.Resolve(result);
     }
     catch (winrt::hresult_canceled const& ex)
     {
@@ -1072,9 +1203,14 @@ IAsyncAction ReactNativeModule::ProcessDownloadRequestAsync(ReactPromise<JSValue
 }
 
 
-IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueObject> promise, JSValueObject& options,
-    winrt::Windows::Web::Http::HttpMethod httpMethod, JSValueArray const& files, int32_t jobId, uint64_t totalUploadSize)
-{
+IAsyncAction ReactNativeFs::ProcessUploadRequestAsync(
+  ReactPromise<ReactNativeFsSpec_UploadResultT>& promise,
+  ReactNativeFsSpec_NativeUploadFileOptionsT& options,
+  winrt::Windows::Web::Http::HttpMethod httpMethod,
+  JSValueArray const& files,
+  double jobId,
+  uint64_t totalUploadSize
+) {
     try
     {
         auto guid = winrt::to_hstring(winrt::Windows::Foundation::GuidHelper::CreateNewGuid());
@@ -1084,31 +1220,35 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
         }
         auto boundary = L"----" + guidStr;
 
-        auto uri = winrt::Windows::Foundation::Uri(winrt::to_hstring(options["toUrl"].AsString()));
+        auto uri = winrt::Windows::Foundation::Uri(winrt::to_hstring(options.toUrl));
 
         winrt::Windows::Web::Http::HttpRequestMessage requestMessage{ httpMethod, uri };
         winrt::Windows::Web::Http::HttpMultipartFormDataContent requestContent{ boundary };
 
-        auto const& headers{ options["headers"].AsObject() };
-        
-        for (auto const& entry : headers)
-        {
+        if (options.headers.has_value()) {
+          auto const& headers{ options.headers.value().AsObject()};
+
+          for (auto const& entry : headers)
+          {
             if (!requestMessage.Headers().TryAppendWithoutValidation(winrt::to_hstring(entry.first), winrt::to_hstring(entry.second.AsString())))
             {
-                requestContent.Headers().TryAppendWithoutValidation(winrt::to_hstring(entry.first), winrt::to_hstring(entry.second.AsString()));
+              requestContent.Headers().TryAppendWithoutValidation(winrt::to_hstring(entry.first), winrt::to_hstring(entry.second.AsString()));
             }
+          }
         }
 
-        auto const& fields{ options["fields"].AsObject() };
-        for (auto const& kv : fields)
-        {
-          auto name = winrt::to_hstring(kv.first);
-          auto value = winrt::to_hstring(kv.second.AsString());
-          Windows::Web::Http::HttpStringContent part(value, Windows::Storage::Streams::UnicodeEncoding::Utf8);
-          requestContent.Add(part, name);
+        if (options.fields.has_value()) {
+          auto const& fields{ options.fields.value().AsObject()};
+          for (auto const& kv : fields)
+          {
+            auto name = winrt::to_hstring(kv.first);
+            auto value = winrt::to_hstring(kv.second.AsString());
+            Windows::Web::Http::HttpStringContent part(value, Windows::Storage::Streams::UnicodeEncoding::Utf8);
+            requestContent.Add(part, name);
+          }
         }
 
-        m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadBegin",
+        m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadBegin",
             JSValueObject{
                 { "jobId", jobId },
             });
@@ -1121,7 +1261,7 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
             auto name{ winrt::to_hstring(fileObj["name"].AsString()) }; // name to be sent via http request
             auto filename{ winrt::to_hstring(fileObj["filename"].AsString()) }; // filename to be sent via http request
             auto filePath{ fileObj["filepath"].AsString()}; // accessing the file
-                        
+
             // Convert std::string to std::wstring
             std::wstring wFilePath = winrt::to_hstring(filePath).c_str();
 
@@ -1135,7 +1275,7 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
             requestContent.Add(entry, name, filename);
 
             totalUploaded += properties.Size();
-            m_reactContext.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
+            m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
                 JSValueObject{
                     { "jobId", jobId },
                     { "totalBytesExpectedToSend", totalUploadSize },   // The total number of bytes that will be sent to the server
@@ -1150,13 +1290,13 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
         auto resultHeaders{ winrt::to_string(response.Headers().ToString()) };
         auto resultContent{ winrt::to_string(co_await response.Content().ReadAsStringAsync()) };
 
-        promise.Resolve(JSValueObject
-            {
-                { "jobId", jobId },
-                { "statusCode", std::stoi(statusCode) },
-                { "headers", resultHeaders},
-                { "body", resultContent},
-            });
+        ReactNativeFsSpec_UploadResultT result;
+        result.jobId = jobId;
+        result.statusCode = std::stoi(statusCode);
+        result.headers = resultHeaders;
+        result.body = resultContent;
+
+        promise.Resolve(result);
     }
     catch (winrt::hresult_canceled const& ex)
     {
@@ -1170,25 +1310,22 @@ IAsyncAction ReactNativeModule::ProcessUploadRequestAsync(ReactPromise<JSValueOb
     }
 }
 
-void ReactNativeModule::pickFile(JSValueObject options, ReactPromise<JSValueArray> promise) noexcept
+void ReactNativeFs::pickFile(
+  ReactNativeFsSpec_PickFileOptionsT&& options,
+  ::React::ReactPromise<std::vector<std::string>>&& promise
+) noexcept
 {
-    m_reactContext.UIDispatcher().Post([this, options = std::move(options), promise = std::move(promise)]() mutable {
+    m_context.UIDispatcher().Post([this, options = std::move(options), promise = std::move(promise)]() mutable {
         try
         {
             // read options
-            std::string pickerType = "multipleFiles"; // Default value
-            if (options.find("pickerType") != options.end())
-            {
-                pickerType = options["pickerType"].AsString();
-            }
+            std::string pickerType = options.pickerType;
+            if (pickerType.compare("") == 0) pickerType = "multipleFiles"; // Default value
 
             std::vector<std::wstring> fileTypes;
-            if (options.find("fileExtensions") != options.end())
+            for (const auto& mimeType : options.fileExtensions)
             {
-                for (const auto& mimeType : options["fileExtensions"].AsArray())
-                {
-                    fileTypes.push_back(std::wstring(winrt::to_hstring(mimeType.AsString())));
-                }
+                fileTypes.push_back(std::wstring(winrt::to_hstring(mimeType.AsString())));
             }
 
             // folder picker
@@ -1224,11 +1361,18 @@ void ReactNativeModule::pickFile(JSValueObject options, ReactPromise<JSValueArra
                             StorageFolder folder = operation.GetResults();
                             if (folder)
                             {
+                                /*
+                                * TODO: This was returned prior to v2.39.0,
+                                * but it mismatches the TS specs, which expects it to resolve just to array of strings,
+                                * thus.. this commented out, returning the array of paths, maybe revisit later.
                                 JSValueArray result;
                                 result.push_back(JSValueObject{
                                     {"name", winrt::to_string(folder.Name())},
                                     {"path", winrt::to_string(folder.Path())}
                                 });
+                                */
+                                std::vector<std::string> result;
+                                result.push_back(winrt::to_string(folder.Path()));
                                 promise.Resolve(std::move(result));
                             }
                             else
@@ -1296,7 +1440,7 @@ void ReactNativeModule::pickFile(JSValueObject options, ReactPromise<JSValueArra
                                 StorageFile file = operation.GetResults();
                                 if (file)
                                 {
-                                    JSValueArray result;
+                                    std::vector<std::string> result;
                                     result.push_back(winrt::to_string(file.Path()));
                                     promise.Resolve(std::move(result));
                                 }
@@ -1328,12 +1472,12 @@ void ReactNativeModule::pickFile(JSValueObject options, ReactPromise<JSValueArra
                                 auto files = operation.GetResults();
                                 if (files.Size() > 0)
                                 {
-                                    JSValueArray result;
-                                    for (const auto& file : files)
-                                    {
-                                        result.push_back(winrt::to_string(file.Path()));
-                                    }
-                                    promise.Resolve(std::move(result));
+                                  std::vector<std::string> result;
+                                  for (const auto& file : files)
+                                  {
+                                    result.push_back(winrt::to_string(file.Path()));
+                                  }
+                                  promise.Resolve(std::move(result));
                                 }
                                 else
                                 {
@@ -1364,12 +1508,14 @@ void ReactNativeModule::pickFile(JSValueObject options, ReactPromise<JSValueArra
     });
 }
 
-void ReactNativeModule::addListener(std::string eventName) noexcept
+void ReactNativeFs::addListener(std::string eventName) noexcept
 {
     // Keep: Required for RN built in Event Emitter Calls.
 }
 
-void ReactNativeModule::removeListeners(int count) noexcept
+void ReactNativeFs::removeListeners(int count) noexcept
 {
     // Keep: Required for RN built in Event Emitter Calls.
 }
+
+} // namespace winrt::ReactNativeFs
