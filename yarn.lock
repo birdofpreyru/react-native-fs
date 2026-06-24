@@ -1529,7 +1529,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dr.pogodin/js-utils@npm:^0.1.6":
+"@dr.pogodin/js-utils@npm:^0.1.8":
   version: 0.1.8
   resolution: "@dr.pogodin/js-utils@npm:0.1.8"
   dependencies:
@@ -1545,7 +1545,7 @@ __metadata:
     "@babel/core": "npm:^7.29.7"
     "@babel/preset-env": "npm:^7.29.7"
     "@babel/runtime": "npm:^7.29.7"
-    "@dr.pogodin/react-native-static-server": "npm:^0.26.2"
+    "@dr.pogodin/react-native-static-server": "npm:^0.27.0"
     "@react-native-community/cli": "npm:20.1.3"
     "@react-native-community/cli-platform-android": "npm:20.1.3"
     "@react-native-community/cli-platform-ios": "npm:20.1.3"
@@ -1553,7 +1553,7 @@ __metadata:
     "@react-native/jest-preset": "npm:0.86.0"
     "@react-native/metro-config": "npm:0.86.0"
     "@react-native/typescript-config": "npm:0.86.0"
-    "@rnx-kit/jest-preset": "npm:^0.3.1"
+    "@rnx-kit/jest-preset": "npm:^0.3.2"
     "@types/lodash": "npm:^4.17.24"
     "@types/react": "npm:^19.2.17"
     lodash: "npm:^4.18.1"
@@ -1593,16 +1593,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dr.pogodin/react-native-static-server@npm:^0.26.2":
-  version: 0.26.2
-  resolution: "@dr.pogodin/react-native-static-server@npm:0.26.2"
+"@dr.pogodin/react-native-static-server@npm:^0.27.0":
+  version: 0.27.0
+  resolution: "@dr.pogodin/react-native-static-server@npm:0.27.0"
   dependencies:
-    "@dr.pogodin/js-utils": "npm:^0.1.6"
+    "@dr.pogodin/js-utils": "npm:^0.1.8"
   peerDependencies:
     "@dr.pogodin/react-native-fs": ">= 2.22.0"
     react: "*"
     react-native: "*"
-  checksum: 10c0/a6d6c900f7540f00812fd3ad4edd436d1a0ed0838633d638cccaff5d014f16d3393abd2c2cc6810df4553fb9612d9009b966ff8589e5a39ac142f4553b9e3cab
+  checksum: 10c0/b4177b9cfb56805a213eba725ecbcc10022bd9343fc449080a9c72e80412f0bd688cb21e91522eb6ab9b124695367c93c4d507deb8d192f4cf5182e3601af6bd
   languageName: node
   linkType: hard
 
@@ -2440,7 +2440,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rnx-kit/jest-preset@npm:^0.3.1":
+"@rnx-kit/jest-preset@npm:^0.3.2":
   version: 0.3.2
   resolution: "@rnx-kit/jest-preset@npm:0.3.2"
   dependencies:
