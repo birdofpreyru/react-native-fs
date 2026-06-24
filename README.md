@@ -37,7 +37,6 @@ Mac (Catalyst), and Windows platforms.
 [<img width=36 src="https://avatars.githubusercontent.com/u/11723093?v=4&s=36" />](https://github.com/Bengejd)
 [<img width=36 src="https://avatars.githubusercontent.com/u/48058861?v=4&s=36" />](https://github.com/meza-jhonathan)
 [<img width=36 src="https://avatars.githubusercontent.com/u/62384153?v=4&s=36" />](https://github.com/pcprinz)
-[<img width=36 src="https://avatars.githubusercontent.com/u/3824379?v=4&s=36" />](https://github.com/hsjoberg)
 [<img width=36 src="https://avatars.githubusercontent.com/u/12956672?v=4&s=36" />](https://github.com/christianchown)
 [<img width=36 src="https://avatars.githubusercontent.com/u/31921080?s=36" />](https://github.com/Yupeng-li)
 [<img width=36 src="https://avatars.githubusercontent.com/u/12350021?s=36" />](https://github.com/zenoxs)
