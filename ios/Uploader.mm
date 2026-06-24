@@ -39,6 +39,45 @@
     [req setValue:val forHTTPHeaderField:key];
   }
 
+  // --- Streaming fast-path (memory-safe) -------------------------------------
+  // For a single raw binary upload (binaryStreamOnly, no multipart fields), stream
+  // the file directly from disk via -uploadTaskWithRequest:fromFile: instead of
+  // reading the whole file into memory and setting it as the HTTP body. This keeps
+  // memory flat regardless of file size and avoids OOM (Jetsam) kills on large files.
+  if (binaryStreamOnly && _params.files.count == 1 && _params.fields.count == 0) {
+    NSDictionary *file = _params.files[0];
+    NSString *filepath = file[@"filepath"];
+    NSString *filetype = file[@"filetype"];
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:filepath]) {
+      NSError *fileError = [NSError errorWithDomain:@"Uploader"
+                                               code:NSURLErrorFileDoesNotExist
+                                           userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Failed to open target file at path: %@", filepath]}];
+      return _params.errorCallback(fileError);
+    }
+
+    // The default Content-Type set above is multipart; for a raw stream override it
+    // with the file's type (callers may also pass it explicitly via headers).
+    [req setValue:(filetype.length ? filetype : @"application/octet-stream") forHTTPHeaderField:@"Content-Type"];
+
+    NSURL *fileURL = [NSURL fileURLWithPath:filepath];
+
+    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:sessionConfiguration delegate:(id)self delegateQueue:[NSOperationQueue mainQueue]];
+    self->_task = [session uploadTaskWithRequest:req fromFile:fileURL completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        return self->_params.completeCallback(str, response);
+    }];
+    [self->_task resume];
+    [session finishTasksAndInvalidate];
+    if (_params.beginCallback) {
+      _params.beginCallback();
+    }
+    return;
+  }
+  // ---------------------------------------------------------------------------
+
   NSData *formBoundaryData = [[NSString stringWithFormat:@"--%@\r\n", formBoundaryString] dataUsingEncoding:NSUTF8StringEncoding];
   NSMutableData* reqBody = [NSMutableData data];
 

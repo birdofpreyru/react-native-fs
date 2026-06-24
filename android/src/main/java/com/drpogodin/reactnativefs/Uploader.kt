@@ -107,6 +107,12 @@ class Uploader : AsyncTask<UploadParams?, IntArray?, UploadResult>() {
             requestLength += stringData.toByteArray().size + files.size * crlf.toByteArray().size
             connection.setRequestProperty("Content-length", "" + requestLength.toInt())
             connection.setFixedLengthStreamingMode(requestLength.toInt())
+          } else {
+            // Stream the raw body straight from disk. Without a streaming mode,
+            // HttpURLConnection buffers the entire request in memory to compute
+            // Content-Length, which OOMs on large files. The long overload also
+            // supports files larger than 2GB.
+            connection.setFixedLengthStreamingMode(totalFileLength)
           }
           connection.connect()
           request = DataOutputStream(connection.outputStream)
