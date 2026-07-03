@@ -1892,7 +1892,7 @@ PODS:
     - React-utils (= 0.86.0)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.86.0)
-  - ReactNativeFs (2.39.1):
+  - ReactNativeFs (2.39.2):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2254,7 +2254,7 @@ SPEC CHECKSUMS:
   ReactCodegen: afe0d436ee089d7bea6418429d8312b1d23a6801
   ReactCommon: d5c1bb4427bf51c443de5926aac332c89ddd9363
   ReactNativeDependencies: fa0a54b3f5319ae0e3b9aff32bfee7a424b88e66
-  ReactNativeFs: fe4d4fe53044d20688d00ec918862881c9245983
+  ReactNativeFs: 48dea2af8842528577d3ca1e8537e54ee95b1f3c
   ReactNativeStaticServer: eda44e8d4de50ef620bfb705f810625931836895
   Yoga: fe50ab299e578f397fef753cf309c6703a4db29b
 
