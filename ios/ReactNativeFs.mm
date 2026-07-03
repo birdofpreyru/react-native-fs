@@ -454,8 +454,6 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
       return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
     }
 
-    NSData *content = [NSData dataWithContentsOfURL:url];
-
     NSArray *keys = [NSArray arrayWithObjects:@"md5", @"sha1", @"sha224", @"sha256", @"sha384", @"sha512", nil];
 
     NSArray *digestLengths = [NSArray arrayWithObjects:
@@ -477,20 +475,87 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 
     unsigned char buffer[digestLength];
 
+    // Hash the file in fixed-size chunks instead of loading it fully into
+    // memory: a single NSData allocation of a multi-GB file gets the app
+    // killed by iOS (jetsam OOM), and the one-shot CC_* functions truncate
+    // lengths >= 4GB through their 32-bit CC_LONG length parameter.
+    CC_MD5_CTX md5Ctx;
+    CC_SHA1_CTX sha1Ctx;
+    CC_SHA256_CTX sha224Ctx; // SHA-224 uses the SHA-256 context type
+    CC_SHA256_CTX sha256Ctx;
+    CC_SHA512_CTX sha384Ctx; // SHA-384 uses the SHA-512 context type
+    CC_SHA512_CTX sha512Ctx;
+
     if ([algorithm isEqualToString:@"md5"]) {
-      CC_MD5(content.bytes, (CC_LONG)content.length, buffer);
+      CC_MD5_Init(&md5Ctx);
     } else if ([algorithm isEqualToString:@"sha1"]) {
-      CC_SHA1(content.bytes, (CC_LONG)content.length, buffer);
+      CC_SHA1_Init(&sha1Ctx);
     } else if ([algorithm isEqualToString:@"sha224"]) {
-      CC_SHA224(content.bytes, (CC_LONG)content.length, buffer);
+      CC_SHA224_Init(&sha224Ctx);
     } else if ([algorithm isEqualToString:@"sha256"]) {
-      CC_SHA256(content.bytes, (CC_LONG)content.length, buffer);
+      CC_SHA256_Init(&sha256Ctx);
     } else if ([algorithm isEqualToString:@"sha384"]) {
-      CC_SHA384(content.bytes, (CC_LONG)content.length, buffer);
+      CC_SHA384_Init(&sha384Ctx);
     } else if ([algorithm isEqualToString:@"sha512"]) {
-      CC_SHA512(content.bytes, (CC_LONG)content.length, buffer);
+      CC_SHA512_Init(&sha512Ctx);
     } else {
       return reject(@"Error", [NSString stringWithFormat:@"Invalid hash algorithm '%@'", algorithm], nil);
+    }
+
+    NSInputStream *inputStream = [NSInputStream inputStreamWithURL:url];
+    if (inputStream == nil) {
+      return reject(@"EUNSPECIFIED", [NSString stringWithFormat:@"Failed to open '%@' for reading", url.absoluteURL], nil);
+    }
+
+    static const NSUInteger chunkSize = 1024 * 1024;
+    NSMutableData *chunk = [NSMutableData dataWithLength:chunkSize];
+    NSInteger bytesRead = 0;
+
+    [inputStream open];
+    @try {
+      if (inputStream.streamError) {
+        return [[RNFSException fromError:inputStream.streamError] reject:reject];
+      }
+
+      while ((bytesRead = [inputStream read:(uint8_t *)chunk.mutableBytes maxLength:chunkSize]) > 0) {
+        if ([algorithm isEqualToString:@"md5"]) {
+          CC_MD5_Update(&md5Ctx, chunk.bytes, (CC_LONG)bytesRead);
+        } else if ([algorithm isEqualToString:@"sha1"]) {
+          CC_SHA1_Update(&sha1Ctx, chunk.bytes, (CC_LONG)bytesRead);
+        } else if ([algorithm isEqualToString:@"sha224"]) {
+          CC_SHA224_Update(&sha224Ctx, chunk.bytes, (CC_LONG)bytesRead);
+        } else if ([algorithm isEqualToString:@"sha256"]) {
+          CC_SHA256_Update(&sha256Ctx, chunk.bytes, (CC_LONG)bytesRead);
+        } else if ([algorithm isEqualToString:@"sha384"]) {
+          CC_SHA384_Update(&sha384Ctx, chunk.bytes, (CC_LONG)bytesRead);
+        } else if ([algorithm isEqualToString:@"sha512"]) {
+          CC_SHA512_Update(&sha512Ctx, chunk.bytes, (CC_LONG)bytesRead);
+        }
+      }
+
+      if (bytesRead < 0) {
+        if (inputStream.streamError) {
+          return [[RNFSException fromError:inputStream.streamError] reject:reject];
+        }
+        return reject(@"EUNSPECIFIED", [NSString stringWithFormat:@"Failed to read '%@'", url.absoluteURL], nil);
+      }
+    }
+    @finally {
+      [inputStream close];
+    }
+
+    if ([algorithm isEqualToString:@"md5"]) {
+      CC_MD5_Final(buffer, &md5Ctx);
+    } else if ([algorithm isEqualToString:@"sha1"]) {
+      CC_SHA1_Final(buffer, &sha1Ctx);
+    } else if ([algorithm isEqualToString:@"sha224"]) {
+      CC_SHA224_Final(buffer, &sha224Ctx);
+    } else if ([algorithm isEqualToString:@"sha256"]) {
+      CC_SHA256_Final(buffer, &sha256Ctx);
+    } else if ([algorithm isEqualToString:@"sha384"]) {
+      CC_SHA384_Final(buffer, &sha384Ctx);
+    } else if ([algorithm isEqualToString:@"sha512"]) {
+      CC_SHA512_Final(buffer, &sha512Ctx);
     }
 
     NSMutableString *output = [NSMutableString stringWithCapacity:digestLength * 2];
