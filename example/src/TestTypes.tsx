@@ -15,14 +15,9 @@ export interface NotAvailableStatus {
 }
 
 export type Status =
-  | ErrorStatus
-  | SuccessStatus
-  | PendingStatus
-  | NotAvailableStatus;
+  ErrorStatus | SuccessStatus | PendingStatus | NotAvailableStatus;
 
 export type StatusOrEvaluator =
-  | Status
-  | (() => Status)
-  | (() => Promise<Status>);
+  Status | (() => Status) | (() => Promise<Status>);
 
 export type TestMethods = { [name: string]: StatusOrEvaluator };
