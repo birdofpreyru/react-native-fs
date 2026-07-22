@@ -103,6 +103,11 @@
     "android": {
       "javaPackageName": "com.drpogodin.reactnativefs"
     },
+    "ios": {
+      "modulesProvider": {
+        "ReactNativeFs": "ReactNativeFs"
+      }
+    },
     "windows": {
       "namespace": "ReactNativeFsCodegen",
       "outputDirectory": "windows/ReactNativeFs/codegen",
