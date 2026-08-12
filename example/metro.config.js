@@ -32,6 +32,7 @@ const root = path.resolve(__dirname, '..');
 const config = withMetroConfig(getDefaultConfig(__dirname), {
   root,
   dirname: __dirname,
+  conditions: ['drpogodin-react-native-fs-source'],
 });
 
 module.exports = mergeConfig(config, {
