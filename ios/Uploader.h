@@ -24,7 +24,7 @@ typedef void (^UploadProgressCallback)(NSNumber*, NSNumber*);
 
 @end
 
-@interface RNFSUploader : NSObject <NSURLConnectionDelegate>
+@interface RNFSUploader : NSObject <NSURLSessionTaskDelegate>
 
 - (void)uploadFiles:(RNFSUploadParams*)params;
 - (void)stopUpload;

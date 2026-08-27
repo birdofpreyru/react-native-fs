@@ -1160,8 +1160,9 @@ function stopUpload(jobId: number): void;
 
 iOS only. Abort the current upload job with given ID.
 
-**NOTE:** Unlike [stopDownload()] it does not cause the pending upload promise
-to reject. Perhaps, we'll change it in future to behave similarly.
+The pending upload promise rejects when cancellation is reported. Handle that
+rejection just like other upload failures. Stopping an already completed job
+has no effect.
 
 - `jobId` &mdash; **number** &mdash; Upload job ID.
 

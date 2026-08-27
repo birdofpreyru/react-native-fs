@@ -798,7 +798,9 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   bool hasProgressCallback = options.hasProgressCallback();
 
   params.completeCallback = ^(NSString* body, NSURLResponse *resp) {
-    [self.uploaders removeObjectForKey:[jobId stringValue]];
+    @synchronized(self) {
+      [self.uploaders removeObjectForKey:[jobId stringValue]];
+    }
 
     NSMutableDictionary* result = [[NSMutableDictionary alloc] initWithDictionary: @{@"jobId": jobId,
                                                                                      @"body": body}];
@@ -810,7 +812,9 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   };
 
   params.errorCallback = ^(NSError* error) {
-    [self.uploaders removeObjectForKey:[jobId stringValue]];
+    @synchronized(self) {
+      [self.uploaders removeObjectForKey:[jobId stringValue]];
+    }
     return [[RNFSException fromError:error] reject:reject];
   };
 
@@ -828,18 +832,21 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
     };
   }
 
-  if (!self.uploaders) self.uploaders = [[NSMutableDictionary alloc] init];
-
   RNFSUploader* uploader = [RNFSUploader alloc];
+  @synchronized(self) {
+    if (!self.uploaders) self.uploaders = [[NSMutableDictionary alloc] init];
+    [self.uploaders setValue:uploader forKey:[jobId stringValue]];
+  }
 
   [uploader uploadFiles:params];
-
-  [self.uploaders setValue:uploader forKey:[jobId stringValue]];
 }
 
 - (void) stopUpload:(double)jobId
 {
-  RNFSUploader* uploader = [self.uploaders objectForKey:[[NSNumber numberWithDouble:jobId] stringValue]];
+  RNFSUploader* uploader;
+  @synchronized(self) {
+    uploader = [self.uploaders objectForKey:[[NSNumber numberWithDouble:jobId] stringValue]];
+  }
 
   if (uploader != nil) {
     [uploader stopUpload];

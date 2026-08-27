@@ -27,7 +27,9 @@
   // set headers
   NSString *formBoundaryString = [self generateBoundaryString];
   NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@", formBoundaryString];
-  [req setValue:contentType forHTTPHeaderField:@"Content-Type"];
+  if (!binaryStreamOnly) {
+    [req setValue:contentType forHTTPHeaderField:@"Content-Type"];
+  }
   for (NSString *key in _params.headers) {
     id val = [_params.headers objectForKey:key];
     if ([val respondsToSelector:@selector(stringValue)]) {
@@ -57,17 +59,16 @@
       return _params.errorCallback(fileError);
     }
 
-    // The default Content-Type set above is multipart; for a raw stream override it
-    // with the file's type (callers may also pass it explicitly via headers).
-    [req setValue:(filetype.length ? filetype : @"application/octet-stream") forHTTPHeaderField:@"Content-Type"];
+    if (![req valueForHTTPHeaderField:@"Content-Type"].length) {
+      [req setValue:(filetype.length ? filetype : @"application/octet-stream") forHTTPHeaderField:@"Content-Type"];
+    }
 
     NSURL *fileURL = [NSURL fileURLWithPath:filepath];
 
     NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:sessionConfiguration delegate:(id)self delegateQueue:[NSOperationQueue mainQueue]];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:sessionConfiguration delegate:self delegateQueue:[NSOperationQueue mainQueue]];
     self->_task = [session uploadTaskWithRequest:req fromFile:fileURL completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        return self->_params.completeCallback(str, response);
+        [self completeUploadWithData:data response:response error:error];
     }];
     [self->_task resume];
     [session finishTasksAndInvalidate];
@@ -107,13 +108,13 @@
     // Check if file exists
     NSFileManager *fileManager = [NSFileManager defaultManager];
     if (![fileManager fileExistsAtPath:filepath]){
-      // NSError* error = [NSError errorWithDomain:@"Uploader" code:NSURLErrorFileDoesNotExist userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat: @"Failed to open target file at path: %@", filepath]}];
-      // return _params.errorCallback(error);
-      NSLog(@"Failed to open target file at path: %@", filepath);
-      continue;
+      NSError *error = [NSError errorWithDomain:@"Uploader" code:NSURLErrorFileDoesNotExist userInfo:@{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Failed to open target file at path: %@", filepath]}];
+      return _params.errorCallback(error);
     }
 
-    NSData *fileData = [NSData dataWithContentsOfFile:filepath];
+    NSError *readError = nil;
+    NSData *fileData = [NSData dataWithContentsOfFile:filepath options:0 error:&readError];
+    if (!fileData) return _params.errorCallback(readError);
     if (!binaryStreamOnly) {
       [reqBody appendData:formBoundaryData];
       [reqBody appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\n", name.length ? name : filename, filename] dataUsingEncoding:NSUTF8StringEncoding]];
@@ -139,19 +140,28 @@
   }
 
   // send request
+  if (binaryStreamOnly && ![req valueForHTTPHeaderField:@"Content-Type"].length) {
+    [req setValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
+  }
   [req setHTTPBody:reqBody];
 
   NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
-  NSURLSession *session = [NSURLSession sessionWithConfiguration:sessionConfiguration delegate:(id)self delegateQueue:[NSOperationQueue mainQueue]];
+  NSURLSession *session = [NSURLSession sessionWithConfiguration:sessionConfiguration delegate:self delegateQueue:[NSOperationQueue mainQueue]];
   _task = [session dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-      NSString * str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-      return self->_params.completeCallback(str, response);
+      [self completeUploadWithData:data response:response error:error];
   }];
   [_task resume];
   [session finishTasksAndInvalidate];
   if (_params.beginCallback) {
     _params.beginCallback();
   }
+}
+
+- (void)completeUploadWithData:(NSData *)data response:(NSURLResponse *)response error:(NSError *)error
+{
+  if (error) return _params.errorCallback(error);
+  NSString *body = data ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : nil;
+  _params.completeCallback(body ?: @"", response);
 }
 
 - (NSString *)generateBoundaryString
@@ -179,7 +189,7 @@
   }
 }
 
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didSendBodyData:(int64_t)bytesSent totalBytesSent:(int64_t)totalBytesSent totalBytesExpectedToSend:(NSInteger)totalBytesExpectedToSend
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didSendBodyData:(int64_t)bytesSent totalBytesSent:(int64_t)totalBytesSent totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend
 {
   if (_params.progressCallback) {
     _params.progressCallback([NSNumber numberWithLongLong:totalBytesExpectedToSend], [NSNumber numberWithLongLong:totalBytesSent]);
