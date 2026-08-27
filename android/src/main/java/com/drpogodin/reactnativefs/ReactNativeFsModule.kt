@@ -365,16 +365,16 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     }
 
     override fun hash(filepath: String, algorithm: String, promise: Promise) {
-        var inputStream: FileInputStream? = null
         try {
-            val algorithms: MutableMap<String, String> = HashMap()
-            algorithms["md5"] = "MD5"
-            algorithms["sha1"] = "SHA-1"
-            algorithms["sha224"] = "SHA-224"
-            algorithms["sha256"] = "SHA-256"
-            algorithms["sha384"] = "SHA-384"
-            algorithms["sha512"] = "SHA-512"
-            if (!algorithms.containsKey(algorithm)) throw Exception("Invalid hash algorithm")
+            val digestAlgorithm = when (algorithm) {
+                "md5" -> "MD5"
+                "sha1" -> "SHA-1"
+                "sha224" -> "SHA-224"
+                "sha256" -> "SHA-256"
+                "sha384" -> "SHA-384"
+                "sha512" -> "SHA-512"
+                else -> throw Exception("Invalid hash algorithm")
+            }
             val file = File(filepath)
             if (file.isDirectory) {
                 rejectFileIsDirectory(promise)
@@ -384,21 +384,27 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
                 rejectFileNotFound(promise, filepath)
                 return
             }
-            val md = MessageDigest.getInstance(algorithms[algorithm]!!)
-            inputStream = FileInputStream(filepath)
-            val buffer = ByteArray(1024 * 10) // 10 KB Buffer
-            var read: Int
-            while (inputStream.read(buffer).also { read = it } != -1) {
-                md.update(buffer, 0, read)
+            val md = MessageDigest.getInstance(digestAlgorithm)
+            FileInputStream(filepath).use { inputStream ->
+                val buffer = ByteArray(1024 * 10) // 10 KB Buffer
+                var read: Int
+                while (inputStream.read(buffer).also { read = it } != -1) {
+                    md.update(buffer, 0, read)
+                }
             }
-            val hexString = StringBuilder()
-            for (digestByte in md.digest()) hexString.append(String.format("%02x", digestByte))
-            promise.resolve(hexString.toString())
+            val digest = md.digest()
+            val hexDigits = "0123456789abcdef"
+            val hexString = buildString(digest.size * 2) {
+                for (byte in digest) {
+                    val value = byte.toInt() and 0xff
+                    append(hexDigits[value ushr 4])
+                    append(hexDigits[value and 0xf])
+                }
+            }
+            promise.resolve(hexString)
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filepath, ex)
-        } finally {
-            inputStream?.close()
         }
     }
 
@@ -758,34 +764,27 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    // TODO: position arg should be double.
     override fun write(
             filepath: String,
             base64Content: String?,
             position: Double,
             promise: Promise
     ) {
-        var outputStream: OutputStream? = null
-        var file: RandomAccessFile? = null
         try {
             val bytes = Base64.decode(base64Content, Base64.DEFAULT)
             if (position < 0) {
-                outputStream = getOutputStream(filepath, true)
-                outputStream.write(bytes)
+                getOutputStream(filepath, true).use { it.write(bytes) }
             } else {
-                file = RandomAccessFile(filepath, "rw")
-                file.seek(position.toLong())
-                file.write(bytes)
+                RandomAccessFile(filepath, "rw").use { file ->
+                    file.seek(position.toLong())
+                    file.write(bytes)
+                }
             }
             // BEWARE: Output stream must be closed before resolving the promise.
-            outputStream?.close()
             promise.resolve(null)
         } catch (ex: Exception) {
-            outputStream?.close()
             ex.printStackTrace()
             reject(promise, filepath, ex)
-        } finally {
-            file?.close()
         }
     }
 
@@ -933,8 +932,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     }
 
     private fun getResIdentifier(filename: String): Int {
-        val suffix = filename.substring(filename.lastIndexOf(".") + 1)
-        val name = filename.substring(0, filename.lastIndexOf("."))
+        val suffix = filename.substringAfterLast('.', "")
+        val name = filename.substringBeforeLast('.', filename)
         val isImage = suffix == "png" || suffix == "jpg" || suffix == "jpeg" || suffix == "bmp" || suffix == "gif" || suffix == "webp" || suffix == "psd" || suffix == "svg" || suffix == "tiff"
         return reactApplicationContext.resources.getIdentifier(name, if (isImage) "drawable" else "raw", reactApplicationContext.packageName)
     }

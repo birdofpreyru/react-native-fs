@@ -1084,11 +1084,9 @@ function readFileRes(filename: string, encoding?: EncodingT): Promise<string>;
 Android-only. Reads the file named `filename` in the Android app's `res` folder
 and return contents. Only the file name (not folder) needs to be specified.
 
-Original docs say: _The file type will be detected from the extension and
-automatically located within `res/drawable` (for image files) or `res/raw`
-(for everything else)._ Good luck with it. The test in the example app does not
-work if the file extension is not included into the filename... but perhaps
-I've overlooked something.
+The file type is detected from the extension and located within `res/drawable`
+(for image files) or `res/raw` (for everything else). Names without an extension
+are looked up in `res/raw`.
 
 - `filename` &mdash; **string** &mdash; Resouce file name.
 - `encoding` &mdash; [EncodingT] &mdash; Optional Encdoing.
