@@ -78,11 +78,6 @@ std::string GetMainBundlePath() noexcept
     }
 }
 
-union touchTime {
-    int64_t initialTime;
-    DWORD splitTime[2];
-};
-
 //
 // For downloads and uploads
 //
@@ -1015,48 +1010,23 @@ try
         return;
     }
 
-    touchTime mtime_64{ options.mtime.value_or(0) * 10000 + UNIX_EPOCH_IN_WINRT_INTERVAL };
-    FILETIME mFileTime;
-    mFileTime.dwLowDateTime = mtime_64.splitTime[0];
-    mFileTime.dwHighDateTime = mtime_64.splitTime[1];
+    auto toFileTime = [](double milliseconds) {
+        auto ticks = static_cast<int64_t>(milliseconds * 10000 + UNIX_EPOCH_IN_WINRT_INTERVAL);
+        return FILETIME{static_cast<DWORD>(ticks), static_cast<DWORD>(ticks >> 32)};
+    };
+    FILETIME mFileTime{}, cFileTime{};
+    if (options.mtime) mFileTime = toFileTime(*options.mtime);
+    if (options.ctime) cFileTime = toFileTime(*options.ctime);
 
-    /*
-    * TODO: Prior to v2.39.0 the Windows implementation of touch() used to accept an additional argument,
-    * "modifyCreationTime", which was not actually present in the TS definition of touch(). With changes
-    * in v2.39.0, the Codegen and related typechecks captured that inconsistence, and for now I am just
-    * commenting out this block, as if "modifyCreationTime" is not there. Perhaps, later, we should
-    * re-wire this argument correctly.
-    *
-    if (modifyCreationTime)
+    if (SetFileTime(handle.get(), options.ctime ? &cFileTime : nullptr, nullptr,
+                    options.mtime ? &mFileTime : nullptr) == 0)
     {
-        touchTime ctime_64{ options.ctime.value_or(0) * 10000 + UNIX_EPOCH_IN_WINRT_INTERVAL };
-        FILETIME cFileTime;
-        cFileTime.dwLowDateTime = ctime_64.splitTime[0];
-        cFileTime.dwHighDateTime = ctime_64.splitTime[1];
-
-        if (SetFileTime(handle.get(), &cFileTime, nullptr, &mFileTime) == 0)
-        {
-            promise.Reject("Failed to set new creation time and modified time of file.");
-        }
-        else
-        {
-            promise.Resolve(winrt::to_string(s_path));
-        }
+        promise.Reject("Failed to set new creation time and modified time of file.");
     }
     else
     {
-    */
-        if (SetFileTime(handle.get(), nullptr, nullptr, &mFileTime) == 0)
-        {
-            promise.Reject("Failed to set new creation time and modified time of file.");
-        }
-        else
-        {
-            // TODO: It used to resolve a value, but it wasn't in TS definition... check later,
-            // if we should wire it up with the return value on all systems, or just remove for good?
-            promise.Resolve(/* winrt::to_string(s_path) */);
-        }
-    // }
+        promise.Resolve();
+    }
 }
 catch (const hresult_error& ex)
 {
