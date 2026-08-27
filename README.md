@@ -127,7 +127,7 @@ Mac (Catalyst), and Windows platforms.
       [Media Scanner](https://developer.android.com/reference/android/media/MediaScannerConnection).
     - [stat()] &mdash; Returns info on a file system item.
     - [stopDownload()] &mdash; Aborts a file download job.
-    - [stopUpload()] &mdash; (iOS only) Aborts file upload job.
+    - [stopUpload()] &mdash; (Android and iOS) Aborts file upload job.
     - [touch()] &mdash; Alters creation and modification timestamps of the given file.
     - [unlink()] &mdash; Unlinks (removes) a file or directory with files.
   and return its contents.
@@ -1156,12 +1156,12 @@ is not set when calling [downloadFile()], the promise returned from the aborted
 ```ts
 function stopUpload(jobId: number): void;
 ```
-**VERIFIED:** iOS. **NOT SUPPORTED**: Android, Windows.
+**SUPPORTED:** Android, iOS. **NOT SUPPORTED**: Windows.
 
-iOS only. Abort the current upload job with given ID.
+Abort the current upload job with given ID.
 
-**NOTE:** Unlike [stopDownload()] it does not cause the pending upload promise
-to reject. Perhaps, we'll change it in future to behave similarly.
+On Android, cancellation rejects the pending upload promise. Handle that
+rejection like other upload failures. The iOS cancellation behavior is unchanged.
 
 - `jobId` &mdash; **number** &mdash; Upload job ID.
 

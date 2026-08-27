@@ -739,11 +739,11 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             }
             if (hasProgressCallback) {
                 params.onUploadProgress = object : UploadParams.OnUploadProgress {
-                    override fun onUploadProgress(totalBytesExpectedToSend: Int, totalBytesSent: Int) {
+                    override fun onUploadProgress(totalBytesExpectedToSend: Long, totalBytesSent: Long) {
                         val data = Arguments.createMap().apply {
                             putInt("jobId", jobId)
-                            putInt("totalBytesExpectedToSend", totalBytesExpectedToSend)
-                            putInt("totalBytesSent", totalBytesSent)
+                            putDouble("totalBytesExpectedToSend", totalBytesExpectedToSend.toDouble())
+                            putDouble("totalBytesSent", totalBytesSent.toDouble())
                         }
                         emitOnUploadProgress(data)
                     }

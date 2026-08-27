@@ -9,7 +9,7 @@ class UploadParams {
     }
 
     interface OnUploadProgress {
-        fun onUploadProgress(totalBytesExpectedToSend: Int, totalBytesSent: Int)
+        fun onUploadProgress(totalBytesExpectedToSend: Long, totalBytesSent: Long)
     }
 
     interface OnUploadBegin {
