@@ -337,24 +337,9 @@ export function uploadFiles(options: UploadFileOptionsT): {
     throw new Error('uploadFiles: Invalid value for property `method`');
   }
 
-  if (options.begin) {
-    subscriptions.push(RNFS.onUploadBegin(options.begin));
-
-    // TODO: Deprecated, will be removed in a future release.
-  } else if (options.beginCallback) {
-    subscriptions.push(RNFS.onUploadBegin(options.beginCallback));
-  }
-
-  if (options.progress) {
-    subscriptions.push(RNFS.onUploadProgress(options.progress));
-
-    // TODO: Deprecated, will be removed in a future release.
-  } else if (options.progressCallback) {
-    subscriptions.push(RNFS.onUploadProgress(options.progressCallback));
-  }
-
   const files = options.files.map(item => ({
     ...item,
+    filepath: normalizeFilePath(item.filepath),
     name: item.name ?? item.filename,
   }));
 
@@ -374,19 +359,44 @@ export function uploadFiles(options: UploadFileOptionsT): {
       options.progressCallback instanceof Function,
   };
 
+  const begin = options.begin || options.beginCallback;
+  const progress = options.progress || options.progressCallback;
+
   return {
     jobId,
-    promise: RNFS.uploadFiles(nativeOptions).then((res: UploadResultT) => {
-      subscriptions.forEach(sub => sub.remove());
-
-      if (res.statusCode >= 400) {
-        const error = Error(getReasonPhrase(res.statusCode));
-        (error as any).result = res;
-        throw error;
+    promise: (async () => {
+      try {
+        if (begin) {
+          subscriptions.push(
+            RNFS.onUploadBegin(res => {
+              if (res.jobId === jobId) begin(res);
+            }),
+          );
+        }
+        if (progress) {
+          subscriptions.push(
+            RNFS.onUploadProgress(res => {
+              if (res.jobId === jobId) progress(res);
+            }),
+          );
+        }
+        const res = await RNFS.uploadFiles(nativeOptions);
+        if (res.statusCode >= 400) {
+          let message = `HTTP ${res.statusCode}`;
+          try {
+            message = getReasonPhrase(res.statusCode);
+          } catch {
+            // Keep the response available for non-standard HTTP status codes.
+          }
+          const error = Error(message);
+          (error as any).result = res;
+          throw error;
+        }
+        return res;
+      } finally {
+        subscriptions.forEach(sub => sub.remove());
       }
-
-      return res;
-    }),
+    })(),
   };
 }
 
