@@ -195,6 +195,7 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   NSError *error = nil;
   NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
   if (error) return [[RNFSException fromError:error] reject:reject];
+  filepath = url.path;
 
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
@@ -215,10 +216,14 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
     }
 
     @try {
-      NSFileHandle *fH = [NSFileHandle fileHandleForUpdatingAtPath:filepath];
-
-      [fH seekToEndOfFile];
-      [fH writeData:data];
+      NSFileHandle *fH = [NSFileHandle fileHandleForWritingToURL:url error:&error];
+      if (!fH) return [[RNFSException fromError:error] reject:reject];
+      @try {
+        [fH seekToEndOfFile];
+        [fH writeData:data];
+      } @finally {
+        [fH closeFile];
+      }
 
       return resolve(nil);
     } @catch (NSException *exception) {
@@ -282,6 +287,7 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   NSError *error = nil;
   NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
   if (error) return [[RNFSException fromError:error] reject:reject];
+  filepath = url.path;
 
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
@@ -342,6 +348,7 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   NSError *error = nil;
   NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
   if (error) return [[RNFSException fromError:error] reject:reject];
+  filepath = url.path;
 
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
@@ -362,7 +369,8 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
       return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
     }
 
-    NSData *content = [[NSFileManager defaultManager] contentsAtPath:filepath];
+    NSData *content = [NSData dataWithContentsOfURL:url options:0 error:&error];
+    if (!content) return [[RNFSException fromError:error] reject:reject];
     NSString *base64Content = [content base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
 
     resolve(base64Content);
@@ -393,11 +401,11 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 
     NSError *error = nil;
 
-    NSFileAttributeType type;
-    BOOL success = [url getResourceValue:&type forKey:NSFileType error:&error];
+    NSNumber *isDirectory;
+    BOOL success = [url getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&error];
     if (!success) return [[RNFSException fromError:error] reject:reject];
 
-    if (type == NSFileTypeDirectory) {
+    if (isDirectory.boolValue) {
         return reject(@"EISDIR", @"EISDIR: illegal operation on a directory, read", nil);
     }
 
@@ -407,14 +415,16 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
         return reject(@"EISDIR", @"EISDIR: Could not open file for reading", error);
     }
 
-    // Seek to the position if there is one.
-    [file seekToFileOffset: (long)position];
-
     NSData *content;
-    if ((long)length > 0) {
-        content = [file readDataOfLength: (long)length];
-    } else {
-        content = [file readDataToEndOfFile];
+    @try {
+      [file seekToFileOffset: (long)position];
+      if ((long)length > 0) {
+          content = [file readDataOfLength: (long)length];
+      } else {
+          content = [file readDataToEndOfFile];
+      }
+    } @finally {
+      [file closeFile];
     }
 
     NSString *base64Content = [content base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
@@ -585,7 +595,7 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
     NSFileManager *manager = [NSFileManager defaultManager];
 
     NSError *error = nil;
-    BOOL success = [manager moveItemAtPath:from toPath:into error:&error];
+    BOOL success = [manager moveItemAtURL:url toURL:[NSURL fileURLWithPath:into] error:&error];
 
     if (!success) return [[RNFSException fromError:error] reject:reject];
 
