@@ -3,6 +3,7 @@
 #include "ReactNativeFs.h"
 
 #include <filesystem>
+#include <cmath>
 #include <sstream>
 #include <stack>
 #include <windows.h>
@@ -983,7 +984,7 @@ winrt::fire_and_forget ReactNativeFs::uploadFiles(
             co_return;
         }
 
-        co_await m_tasks.Add(jobId, ProcessUploadRequestAsync(promise, options, httpMethod, files, jobId, totalUploadSize));
+        co_await m_tasks.Add(jobId, ProcessUploadRequestAsync(promise, options, httpMethod, files, jobId));
     }
     catch (const hresult_error& ex)
     {
@@ -1100,15 +1101,17 @@ IAsyncAction ReactNativeFs::ProcessDownloadRequestAsync(
             {
                 headersMap[to_string(header.Key())] = to_string(header.Value());
             }
+            for (auto const& header : response.Content().Headers())
+            {
+                headersMap[to_string(header.Key())] = to_string(header.Value());
+            }
 
-            emitDownloadBegin(
-              JSValueObject{
-                { "jobId", jobId },
-                { "statusCode", (int)response.StatusCode() },
-                { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
-                  ? JSValue(contentLength.Value())
-                  : JSValue{nullptr} },
-                { "headers", std::move(headersMap) },
+            onDownloadBegin(
+              ReactNativeFsSpec_DownloadBeginCallbackResultT{
+                jobId,
+                static_cast<double>(response.StatusCode()),
+                contentLength ? static_cast<double>(contentLength.Value()) : -1,
+                JSValue{std::move(headersMap)},
             });
         }
 
@@ -1122,13 +1125,14 @@ IAsyncAction ReactNativeFs::ProcessDownloadRequestAsync(
         IOutputStream outputStream{ stream.GetOutputStreamAt(0) };
 
         auto contentStream = co_await response.Content().ReadAsInputStreamAsync();
-        auto contentLengthForProgress = contentLength && contentLength.Type() == PropertyType::UInt64 ? contentLength.Value() : -1;
+        double contentLengthForProgress = contentLength ? static_cast<double>(contentLength.Value()) : -1;
 
         Buffer buffer{ 8 * 1024 };
         uint32_t read = 0;
         int64_t initialProgressTime{ winrt::clock::now().time_since_epoch().count() / 10000 };
         int64_t currentProgressTime;
-        uint64_t progressDividerUnsigned{ uint64_t(progressDivider) };
+        double lastProgressBucket{ 0 };
+        uint64_t lastReportedBytes{ 0 };
 
         for (;;)
         {
@@ -1143,44 +1147,43 @@ IAsyncAction ReactNativeFs::ProcessDownloadRequestAsync(
             co_await outputStream.WriteAsync(readBuffer);
             totalRead += read;
 
+            bool reportProgress = false;
             if (progressInterval > 0)
             {
                 currentProgressTime = winrt::clock::now().time_since_epoch().count() / 10000;
                 if(currentProgressTime - initialProgressTime >= progressInterval)
                 {
-                    m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
-                        JSValueObject{
-                            { "jobId", jobId },
-                            { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
-                              ? JSValue(contentLength.Value()) : JSValue{nullptr} },
-                            { "bytesWritten", totalRead },
-                        });
-                    initialProgressTime = winrt::clock::now().time_since_epoch().count() / 10000;
+                    reportProgress = true;
+                    initialProgressTime = currentProgressTime;
                 }
             }
-            else if (progressDivider <= 0)
+            else if (progressDivider <= 0 || contentLengthForProgress <= 0)
             {
-                m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
-                    JSValueObject{
-                        { "jobId", jobId },
-                        { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
-                          ? JSValue(contentLength.Value()) : JSValue{nullptr} },
-                        { "bytesWritten", totalRead },
-                    });
+                reportProgress = true;
             }
             else
             {
-                if (totalRead * 100 / contentLengthForProgress >= progressDividerUnsigned ||
-                    totalRead == contentLengthForProgress) {
-                    m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
-                        JSValueObject{
-                            { "jobId", jobId },
-                            { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
-                              ? JSValue(contentLength.Value()) : JSValue{nullptr} },
-                            { "bytesWritten", totalRead },
-                        });
+                double bucket = std::floor(static_cast<double>(totalRead) * 100 / contentLengthForProgress / progressDivider);
+                if (bucket > lastProgressBucket) {
+                    reportProgress = true;
+                    lastProgressBucket = bucket;
                 }
             }
+            if (reportProgress) {
+                onDownloadProgress(ReactNativeFsSpec_DownloadProgressCallbackResultT{
+                    jobId, contentLengthForProgress, static_cast<double>(totalRead)});
+                lastReportedBytes = totalRead;
+            }
+        }
+
+        if (!(co_await outputStream.FlushAsync())) {
+            throw hresult_error(E_FAIL, L"Failed to flush download destination.");
+        }
+        outputStream.Close();
+        stream.Close();
+        if (lastReportedBytes != totalRead) {
+            onDownloadProgress(ReactNativeFsSpec_DownloadProgressCallbackResultT{
+                jobId, contentLengthForProgress, static_cast<double>(totalRead)});
         }
 
         ReactNativeFsSpec_DownloadResultT result;
@@ -1208,8 +1211,7 @@ IAsyncAction ReactNativeFs::ProcessUploadRequestAsync(
   ReactNativeFsSpec_NativeUploadFileOptionsT& options,
   winrt::Windows::Web::Http::HttpMethod httpMethod,
   JSValueArray const& files,
-  double jobId,
-  uint64_t totalUploadSize
+  double jobId
 ) {
     try
     {
@@ -1248,13 +1250,6 @@ IAsyncAction ReactNativeFs::ProcessUploadRequestAsync(
           }
         }
 
-        m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadBegin",
-            JSValueObject{
-                { "jobId", jobId },
-            });
-
-        uint64_t totalUploaded{ 0 };
-
         for (const auto& fileInfo : files)
         {
             auto const& fileObj{ fileInfo.AsObject() };
@@ -1269,31 +1264,38 @@ IAsyncAction ReactNativeFs::ProcessUploadRequestAsync(
             splitPath(wFilePath, directoryPath, fileName);
             StorageFolder folder{ co_await StorageFolder::GetFolderFromPathAsync(directoryPath) };
             StorageFile file{ co_await folder.GetFileAsync(fileName) };
-            auto properties{ co_await file.GetBasicPropertiesAsync() };
-
-            HttpBufferContent entry{ co_await FileIO::ReadBufferAsync(file) };
+            HttpStreamContent entry{ co_await file.OpenReadAsync() };
             requestContent.Add(entry, name, filename);
-
-            totalUploaded += properties.Size();
-            m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"UploadProgress",
-                JSValueObject{
-                    { "jobId", jobId },
-                    { "totalBytesExpectedToSend", totalUploadSize },   // The total number of bytes that will be sent to the server
-                    { "totalBytesSent", totalUploaded },
-                });
         }
 
         requestMessage.Content(requestContent);
-        HttpResponseMessage response = co_await m_httpClient.SendRequestAsync(requestMessage, HttpCompletionOption::ResponseHeadersRead);
+        if (options.hasBeginCallback) {
+            onUploadBegin(ReactNativeFsSpec_UploadBeginCallbackArgT{jobId});
+        }
+        auto upload = m_httpClient.SendRequestAsync(requestMessage, HttpCompletionOption::ResponseHeadersRead);
+        if (options.hasProgressCallback) {
+            upload.Progress([emitProgress = onUploadProgress, jobId](auto const&, HttpProgress const& progress) {
+                emitProgress(ReactNativeFsSpec_UploadProgressCallbackArgT{
+                    jobId,
+                    progress.TotalBytesToSend ? static_cast<double>(progress.TotalBytesToSend.Value()) : 0,
+                    static_cast<double>(progress.BytesSent)});
+            });
+        }
+        HttpResponseMessage response = co_await upload;
 
-        auto statusCode{ std::to_string(int(response.StatusCode())) };
-        auto resultHeaders{ winrt::to_string(response.Headers().ToString()) };
+        JSValueObject resultHeaders;
+        for (auto const& header : response.Headers()) {
+            resultHeaders[to_string(header.Key())] = to_string(header.Value());
+        }
+        for (auto const& header : response.Content().Headers()) {
+            resultHeaders[to_string(header.Key())] = to_string(header.Value());
+        }
         auto resultContent{ winrt::to_string(co_await response.Content().ReadAsStringAsync()) };
 
         ReactNativeFsSpec_UploadResultT result;
         result.jobId = jobId;
-        result.statusCode = std::stoi(statusCode);
-        result.headers = resultHeaders;
+        result.statusCode = static_cast<double>(response.StatusCode());
+        result.headers = JSValue{std::move(resultHeaders)};
         result.body = resultContent;
 
         promise.Resolve(result);
