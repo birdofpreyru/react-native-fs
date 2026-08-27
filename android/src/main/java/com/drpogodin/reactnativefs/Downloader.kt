@@ -4,10 +4,9 @@ import android.os.AsyncTask
 import android.util.Log
 import com.facebook.react.bridge.Arguments
 import java.io.BufferedInputStream
-import java.io.BufferedReader
 import java.io.FileOutputStream
-import java.io.InputStreamReader
 import java.io.InputStream
+import java.io.IOException
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -17,6 +16,7 @@ import java.util.zip.GZIPInputStream
 class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
     private var mParam: DownloadParams? = null
     private val mAbort = AtomicBoolean(false)
+    @Volatile private var activeConnection: HttpURLConnection? = null
     var res: DownloadResult? = null
 
     @Deprecated("Deprecated in Java")
@@ -40,10 +40,10 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
         var input: InputStream? = null
         var output: OutputStream? = null
         var connection: HttpURLConnection? = null
-        var responseStream: BufferedInputStream? = null
-        var responseStreamReader: BufferedReader? = null
         try {
+            ensureActive()
             connection = param!!.src!!.openConnection() as HttpURLConnection
+            activeConnection = connection
             val iterator = param.headers!!.keySetIterator()
             while (iterator.hasNextKey()) {
                 val key = iterator.nextKey()
@@ -52,6 +52,7 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
             }
             connection.connectTimeout = param.connectionTimeout
             connection.readTimeout = param.readTimeout
+            ensureActive()
             connection.connect()
             var statusCode = connection.responseCode
             var lengthOfFile = getContentLength(connection)
@@ -61,7 +62,9 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                 val redirectURL = connection.getHeaderField("Location")
                 connection.disconnect()
                 connection = URL(redirectURL).openConnection() as HttpURLConnection
+                activeConnection = connection
                 connection.connectTimeout = 5000
+                ensureActive()
                 connection.connect()
                 statusCode = connection.responseCode
                 lengthOfFile = getContentLength(connection)
@@ -80,72 +83,91 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
               }
             }
 
+            val gzip = "gzip".equals(connection.getHeaderField("Content-Encoding"), ignoreCase = true)
+            // Content-Length describes compressed bytes, not the bytes written below.
+            if (gzip) lengthOfFile = -1
             mParam!!.onDownloadBegin?.onDownloadBegin(statusCode, lengthOfFile, responseHeadersBegin)
 
             if (statusCode in 200..299) {
-                val contentEncoding = connection.getHeaderField("Content-Encoding")
-
-                input = if ("gzip".equals(contentEncoding, ignoreCase = true)) {
+                ensureActive()
+                input = if (gzip) {
                     Log.d("Downloader", "File compress with GZIP. Decompress...")
                     GZIPInputStream(connection.inputStream)
                 } else {
                     BufferedInputStream(connection.inputStream, 8 * 1024)
                 }
 
+                ensureActive()
                 output = FileOutputStream(param.dest)
                 val data = ByteArray(8 * 1024)
                 var total: Long = 0
                 var count: Int
-                var lastProgressValue = 0.0
-                var lastProgressEmitTimestamp: Long = 0
+                var lastProgressBucket = 0L
+                var lastProgressEmitTimestamp = 0L
+                var lastReportedBytes = -1L
                 val hasProgressCallback = mParam!!.onDownloadProgress != null
                 while (input.read(data).also { count = it } != -1) {
-                    if (mAbort.get()) throw Exception("Download has been aborted")
+                    ensureActive()
+                    output.write(data, 0, count)
                     total += count.toLong()
                     if (hasProgressCallback) {
+                        var reportProgress = false
                         if (param.progressInterval > 0) {
-                            val timestamp = System.currentTimeMillis()
-                            if (timestamp - lastProgressEmitTimestamp > param.progressInterval) {
+                            val timestamp = System.nanoTime() / 1_000_000
+                            if (lastReportedBytes < 0 || timestamp - lastProgressEmitTimestamp >= param.progressInterval) {
                                 lastProgressEmitTimestamp = timestamp
-                                publishProgress(longArrayOf(lengthOfFile, total))
+                                reportProgress = true
                             }
-                        } else if (param.progressDivider <= 0) {
-                            publishProgress(longArrayOf(lengthOfFile, total))
+                        } else if (param.progressDivider <= 0 || lengthOfFile <= 0) {
+                            reportProgress = true
                         } else {
-                            val progress = Math.round(total.toDouble() * 100 / lengthOfFile).toDouble()
-                            if (progress % param.progressDivider == 0.0) {
-                                if (progress != lastProgressValue || total == lengthOfFile) {
-                                    Log.d("Downloader", "EMIT: $progress, TOTAL:$total")
-                                    lastProgressValue = progress
-                                    publishProgress(longArrayOf(lengthOfFile, total))
-                                }
+                            val bucket = (total.toDouble() * 100 / lengthOfFile / param.progressDivider).toLong()
+                            if (bucket > lastProgressBucket) {
+                                lastProgressBucket = bucket
+                                reportProgress = true
                             }
                         }
+                        if (reportProgress) {
+                            publishProgress(longArrayOf(lengthOfFile, total))
+                            lastReportedBytes = total
+                        }
                     }
-                    output.write(data, 0, count)
                 }
+                ensureActive()
                 output.flush()
+                if (hasProgressCallback && lastReportedBytes != total) {
+                    publishProgress(longArrayOf(lengthOfFile, total))
+                }
                 res.bytesWritten = total
             } else {
-                responseStream = BufferedInputStream(connection.errorStream)
-                responseStreamReader = BufferedReader(InputStreamReader(responseStream))
-                val stringBuilder = StringBuilder()
-                var line: String?
-                while (responseStreamReader.readLine().also { line = it } != null) {
-                    stringBuilder.append(line).append("\n")
+                val errorStream = connection.errorStream
+                if (errorStream != null) {
+                    res.body = errorStream.bufferedReader().use { reader ->
+                        val stringBuilder = StringBuilder()
+                        var line: String?
+                        while (reader.readLine().also { line = it } != null) {
+                            ensureActive()
+                            stringBuilder.append(line).append("\n")
+                        }
+                        stringBuilder.toString()
+                    }
+                } else {
+                    res.body = ""
                 }
-                val response = stringBuilder.toString()
-
-                res!!.body = response
             }
             res.statusCode = statusCode
             res!!.headers = responseHeaders
         } finally {
-            output?.close()
-            input?.close()
-            connection?.disconnect()
-            responseStream?.close()
-            responseStreamReader?.close()
+            try {
+                output?.close()
+            } finally {
+                try {
+                    input?.close()
+                } finally {
+                    connection?.disconnect()
+                    activeConnection = null
+                }
+            }
         }
     }
 
@@ -155,6 +177,11 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
 
     fun stop() {
         mAbort.set(true)
+        activeConnection?.disconnect()
+    }
+
+    private fun ensureActive() {
+        if (mAbort.get()) throw IOException("Download has been aborted")
     }
 
     @Deprecated("Deprecated in Java")
