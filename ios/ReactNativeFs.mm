@@ -21,6 +21,10 @@
 #import "RNFSBackgroundDownloads.h"
 #import "RNFSException.h"
 
+@interface ReactNativeFs ()
+@property (nonatomic, strong) NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
+@end
+
 @implementation ReactNativeFs
 
 // The prefix of "Bookmark URLs".
@@ -31,12 +35,10 @@
 // and pass the resulting "Bookmark URLs" string around.
 static NSString *BOOKMARK = @"bookmark://";
 
-NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
-
 - (id) init
 {
     if (self = [super init]) {
-        pendingPickFilePromises = [NSMutableDictionary dictionaryWithCapacity:1];
+        _pendingPickFilePromises = [NSMutableDictionary dictionaryWithCapacity:1];
     }
     return self;
 }
@@ -1211,9 +1213,9 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
 {
   NSValue *id = [NSValue valueWithPointer:(void*)picker];
-  NSArray *promise = pendingPickFilePromises[id];
+  NSArray *promise = _pendingPickFilePromises[id];
   if (promise != nil) {
-    [pendingPickFilePromises removeObjectForKey:id];
+    [_pendingPickFilePromises removeObjectForKey:id];
     RCTPromiseResolveBlock resolve = promise[0];
     NSMutableArray *res = [NSMutableArray arrayWithCapacity:urls.count];
     for (int i = 0; i < urls.count; ++i) {
@@ -1242,19 +1244,17 @@ didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
     }
     resolve(res);
   }
-  // TODO: Should crash here, as it is a fatal error.
 }
 
 - (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)picker
 {
   NSValue *id = [NSValue valueWithPointer:(void*)picker];
-  NSArray *promise = pendingPickFilePromises[id];
+  NSArray *promise = _pendingPickFilePromises[id];
   if (promise != nil) {
-    [pendingPickFilePromises removeObjectForKey:id];
+    [_pendingPickFilePromises removeObjectForKey:id];
     RCTPromiseResolveBlock resolve = promise[0];
     resolve(@[]);
   }
-  // TODO: Should crash here, as it is a fatal error.
 }
 #endif
 
@@ -1269,8 +1269,8 @@ didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
   // See: https://github.com/birdofpreyru/react-native-fs/issues/44
   JS::NativeReactNativeFs::PickFileOptionsT o = options;
   dispatch_async(dispatch_get_main_queue(), ^() {
+    UIDocumentPickerViewController *picker = nil;
     @try {
-      UIDocumentPickerViewController *picker;
 
       facebook::react::LazyVector<NSString*> mimeTypes = o.mimeTypes();
       int numMimeTypes = mimeTypes.size();
@@ -1282,6 +1282,10 @@ didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
           UTType *type;
           if ([mime isEqual:@"*/*"]) type = UTTypeItem;
           else type = [UTType typeWithMIMEType:mime];
+          if (!type) {
+            reject(@"EINVAL", [NSString stringWithFormat:@"Unsupported MIME type: %@", mime], nil);
+            return;
+          }
           [types addObject:type];
         }
         picker = [[UIDocumentPickerViewController alloc]
@@ -1302,17 +1306,22 @@ didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
       }
 
       UIViewController *root = RCTPresentedViewController();
+      if (!root) {
+        reject(@"RNFS", @"No view controller is available to present the file picker", nil);
+        return;
+      }
 
       // Note: This is needed because the module overall runs on a dedicated queue
       // (see its methodQueue() method below), while interaction with UI should be
       // done on the main thread queue.
 
       picker.delegate = self;
-      [pendingPickFilePromises setObject:@[resolve, reject]
+      [_pendingPickFilePromises setObject:@[resolve, reject]
                                   forKey:[NSValue valueWithPointer:(void*)picker]];
       [root presentViewController:picker animated:YES completion:nil];
     }
     @catch (NSException *e) {
+      if (picker) [_pendingPickFilePromises removeObjectForKey:[NSValue valueWithPointer:(void*)picker]];
       [[RNFSException fromException:e] reject:reject];
     }
   });
