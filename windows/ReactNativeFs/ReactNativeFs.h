@@ -309,7 +309,7 @@ private:
       uint64_t totalUploadSize
     );
 
-    winrt::fire_and_forget copyFolderHelper(
+    winrt::Windows::Foundation::IAsyncAction copyFolderHelper(
         winrt::Windows::Storage::StorageFolder src,
         winrt::Windows::Storage::StorageFolder dest) noexcept;
 

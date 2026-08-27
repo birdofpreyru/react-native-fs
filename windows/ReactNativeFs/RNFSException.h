@@ -13,7 +13,7 @@ public:
   // fields, we may leverage here. For now, just getting the message is ok.
   RNFSException(std::string&& message);
 
-  virtual const char* what();
+  const char* what() const noexcept override;
 
   template<typename T>
   void reject(ReactPromise<T>& promise) {

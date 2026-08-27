@@ -242,11 +242,13 @@ try
                 hresult result{ ex.code() };
                 if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
                     auto index{ parentPath.find_last_of('\\') };
+                    if (index == std::wstring::npos || index == 0) throw;
                     directoriesToMake.push(parentPath.substr(index + 1));
                     parentPath = parentPath.substr(0, index);
                 }
                 else {
                     promise.Reject(winrt::to_string(ex.message()).c_str());
+                    co_return;
                 }
             }
         }
@@ -431,7 +433,7 @@ try
         {
             StorageFolder src{ co_await StorageFolder::GetFolderFromPathAsync(item.Path()) };
             StorageFolder dest{ co_await destFolder.CreateFolderAsync(item.Name(), CreationCollisionOption::OpenIfExists) };
-            copyFolderHelper(src, dest);
+            co_await copyFolderHelper(src, dest);
         }
     }
 
@@ -444,10 +446,9 @@ catch (const hresult_error& ex)
     promise.Reject(winrt::to_string(ex.message()).c_str());
 }
 
-winrt::fire_and_forget ReactNativeFs::copyFolderHelper(
+winrt::Windows::Foundation::IAsyncAction ReactNativeFs::copyFolderHelper(
     winrt::Windows::Storage::StorageFolder src,
     winrt::Windows::Storage::StorageFolder dest) noexcept
-try
 {
     auto items{ co_await src.GetItemsAsync() };
     for (auto item : items)
@@ -461,13 +462,9 @@ try
         {
             StorageFolder srcFolder{ co_await StorageFolder::GetFolderFromPathAsync(item.Path()) };
             StorageFolder destFolder{ co_await dest.CreateFolderAsync(item.Name(), CreationCollisionOption::OpenIfExists) };
-            copyFolderHelper(srcFolder, destFolder);
+            co_await copyFolderHelper(srcFolder, destFolder);
         }
     }
-}
-catch (...)
-{
-    co_return;
 }
 
 winrt::fire_and_forget ReactNativeFs::getFSInfo(
@@ -551,6 +548,7 @@ catch (const hresult_error& ex)
     hresult result{ ex.code() };
     if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
         promise.Resolve(false);
+        co_return;
     }
     // "Failed to check if file or directory exists.
     promise.Reject(winrt::to_string(ex.message()).c_str());
@@ -652,7 +650,7 @@ try
         auto properties{ co_await item.GetBasicPropertiesAsync() };
 
         ReactNativeFsSpec_NativeReadDirResItemT itemInfo;
-        itemInfo.ctime = winrt::clock::to_time_t(targetDirectory.DateCreated());
+        itemInfo.ctime = winrt::clock::to_time_t(item.DateCreated());
         itemInfo.mtime = winrt::clock::to_time_t(properties.DateModified());
         itemInfo.name = to_string(item.Name());
         itemInfo.path = to_string(item.Path());
@@ -689,8 +687,8 @@ try
     Streams::IRandomAccessStream stream{ co_await file.OpenReadAsync() };
     stream.Seek(position);
 
-    stream.ReadAsync(buffer, length, Streams::InputStreamOptions::None);
-    std::string result{ winrt::to_string(Cryptography::CryptographicBuffer::EncodeToBase64String(buffer)) };
+    Streams::IBuffer readBuffer{ co_await stream.ReadAsync(buffer, length, Streams::InputStreamOptions::None) };
+    std::string result{ winrt::to_string(Cryptography::CryptographicBuffer::EncodeToBase64String(readBuffer)) };
 
     promise.Resolve(result);
 }
@@ -802,10 +800,6 @@ catch (const hresult_error& ex)
 winrt::fire_and_forget ReactNativeFs::appendFile(std::wstring filePath, std::wstring base64Content, ReactPromise<void> promise) noexcept
 try
 {
-    size_t fileLength = filePath.length();
-    bool hasTrailingSlash{ filePath[fileLength - 1] == '\\' || filePath[fileLength - 1] == '/' };
-    std::filesystem::path path(hasTrailingSlash ? filePath.substr(0, fileLength - 1) : filePath);
-
     winrt::hstring directoryPath, fileName;
     splitPath(filePath, directoryPath, fileName);
 
