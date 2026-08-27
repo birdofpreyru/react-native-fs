@@ -1420,7 +1420,7 @@ __metadata:
     "@babel/core": "npm:^7.29.7"
     "@babel/preset-env": "npm:^7.29.7"
     "@babel/runtime": "npm:^7.29.7"
-    "@dr.pogodin/react-native-static-server": "npm:^0.27.1"
+    "@dr.pogodin/react-native-static-server": "npm:^0.28.0"
     "@react-native-community/cli": "npm:20.2.0"
     "@react-native-community/cli-platform-android": "npm:20.2.0"
     "@react-native-community/cli-platform-ios": "npm:20.2.0"
@@ -1434,7 +1434,7 @@ __metadata:
     react-native: "npm:0.87.0"
     react-native-builder-bob: "npm:^0.43.0"
     react-native-monorepo-config: "npm:^0.4.0"
-    react-native-safe-area-context: "npm:^5.8.1"
+    react-native-safe-area-context: "npm:^5.9.1"
   languageName: unknown
   linkType: soft
 
@@ -1466,16 +1466,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dr.pogodin/react-native-static-server@npm:^0.27.1":
-  version: 0.27.1
-  resolution: "@dr.pogodin/react-native-static-server@npm:0.27.1"
+"@dr.pogodin/react-native-static-server@npm:^0.28.0":
+  version: 0.28.0
+  resolution: "@dr.pogodin/react-native-static-server@npm:0.28.0"
   dependencies:
     "@dr.pogodin/js-utils": "npm:^0.2.0"
   peerDependencies:
     "@dr.pogodin/react-native-fs": ">= 2.22.0"
     react: "*"
     react-native: "*"
-  checksum: 10c0/7c5c5a2502af888e69012b9591415414b8dec0bb9a0828afe5d0df2d4ff3c22bf97bcf4fcfe38e807373362b8c9db39dbeb0d9318d93f307a8efdefedd9f8f6e
+  checksum: 10c0/60dface0ab9dc3a09fb2c726d7aab2af75f515a75c7c4bbd636e0207b6431bb4ae147c63ddb763138dc6d31263a5171969b501e40a287ac9af775b6cf9a6ed84
   languageName: node
   linkType: hard
 
@@ -6445,13 +6445,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-safe-area-context@npm:^5.8.1":
-  version: 5.8.1
-  resolution: "react-native-safe-area-context@npm:5.8.1"
+"react-native-safe-area-context@npm:^5.9.1":
+  version: 5.9.1
+  resolution: "react-native-safe-area-context@npm:5.9.1"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/b04491f2dd97faf4a0afcb198ba803239676580a9523b23614346236149d0419abb8d0422574f4ce1782d606be6e5741b8e6841d807c48f69247a497a7a511aa
+  checksum: 10c0/ffe37c7d6ebd412673cb3042b370b2d2551b3ba32d73c51246fbd4f01bb6374ff3ec2511c96a55f62e895758ae645ac372e876fd93c690889cfd27a6daa4e389
   languageName: node
   linkType: hard
 
