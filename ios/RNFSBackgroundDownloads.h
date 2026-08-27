@@ -8,6 +8,8 @@
 #ifndef RNFSBackgroundDownloads_h
 #define RNFSBackgroundDownloads_h
 
+#import <Foundation/Foundation.h>
+
 typedef void (^CompletionHandler)(void);
 
 @interface RNFSBackgroundDownloads: NSObject

@@ -669,10 +669,11 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   __block BOOL callbackFired = NO;
 
   params.completeCallback = ^(NSNumber* statusCode, NSNumber* bytesWritten, NSDictionary* headers, NSString* body) {
-    if (callbackFired) {
-      return;
+    @synchronized(self) {
+      if (callbackFired) return;
+      callbackFired = YES;
+      [self.downloaders removeObjectForKey:jobId.stringValue];
     }
-    callbackFired = YES;
 
     NSMutableDictionary* result = [[NSMutableDictionary alloc] initWithDictionary: @{@"jobId": jobId}];
     if (statusCode) {
@@ -691,10 +692,11 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   };
 
   params.errorCallback = ^(NSError* error) {
-    if (callbackFired) {
-      return;
+    @synchronized(self) {
+      if (callbackFired) return;
+      callbackFired = YES;
+      [self.downloaders removeObjectForKey:jobId.stringValue];
     }
-    callbackFired = YES;
     return [[RNFSException fromError:error] reject:reject];
   };
 
@@ -721,22 +723,28 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
     };
   }
 
-  if (!self.downloaders) self.downloaders = [[NSMutableDictionary alloc] init];
-
   RNFSDownloader* downloader = [RNFSDownloader alloc];
+  @synchronized(self) {
+    if (!self.downloaders) self.downloaders = [[NSMutableDictionary alloc] init];
+    [self.downloaders setObject:downloader forKey:jobId.stringValue];
+  }
 
   NSString *uuid = [downloader downloadFile:params];
 
-  [self.downloaders setValue:downloader forKey:[jobId stringValue]];
-    if (uuid) {
-        if (!self.uuids) self.uuids = [[NSMutableDictionary alloc] init];
-        [self.uuids setValue:uuid forKey:[jobId stringValue]];
+  if (uuid) {
+    @synchronized(self) {
+      if (!self.uuids) self.uuids = [[NSMutableDictionary alloc] init];
+      [self.uuids setObject:uuid forKey:jobId.stringValue];
     }
+  }
 }
 
 - (void) stopDownload:(double)jobId
 {
-  RNFSDownloader* downloader = [self.downloaders objectForKey:[[NSNumber numberWithDouble:jobId] stringValue]];
+  RNFSDownloader* downloader;
+  @synchronized(self) {
+    downloader = [self.downloaders objectForKey:[[NSNumber numberWithDouble:jobId] stringValue]];
+  }
 
   if (downloader != nil) {
     [downloader stopDownload];
@@ -745,7 +753,10 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 
 - (void) resumeDownload:(double)jobId
 {
-    RNFSDownloader* downloader = [self.downloaders objectForKey:[[NSNumber numberWithDouble:jobId] stringValue]];
+    RNFSDownloader* downloader;
+    @synchronized(self) {
+      downloader = [self.downloaders objectForKey:[[NSNumber numberWithDouble:jobId] stringValue]];
+    }
 
     if (downloader != nil) {
         [downloader resumeDownload];
@@ -756,7 +767,10 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject
 {
-    RNFSDownloader* downloader = [self.downloaders objectForKey:[[NSNumber numberWithDouble:jobId] stringValue]];
+    RNFSDownloader* downloader;
+    @synchronized(self) {
+      downloader = [self.downloaders objectForKey:[[NSNumber numberWithDouble:jobId] stringValue]];
+    }
 
     if (downloader != nil) {
         resolve([NSNumber numberWithBool:[downloader isResumable]]);
@@ -767,11 +781,13 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 
 - (void) completeHandlerIOS:(double)jobId
 {
-    if (self.uuids) {
-        NSNumber *jid = [NSNumber numberWithDouble:jobId];
-        NSString *uuid = [self.uuids objectForKey:[jid stringValue]];
-      [RNFSBackgroundDownloads complete:uuid];
+    NSString *uuid;
+    @synchronized(self) {
+      NSString *key = [[NSNumber numberWithDouble:jobId] stringValue];
+      uuid = [self.uuids objectForKey:key];
+      [self.uuids removeObjectForKey:key];
     }
+    if (uuid) [RNFSBackgroundDownloads complete:uuid];
 }
 
 - (void) uploadFiles:(JS::NativeReactNativeFs::NativeUploadFileOptionsT &)options

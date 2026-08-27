@@ -123,8 +123,16 @@
   NSError *error = nil;
   NSString *responseBodyString = nil;
   if([_statusCode integerValue] >= 200 && [_statusCode integerValue] < 300) {
-    [fm removeItemAtURL:destURL error:nil];       // Remove file at destination path, if it exists
-    [fm moveItemAtURL:location toURL:destURL error:&error];
+    BOOL isDirectory = NO;
+    if ([fm fileExistsAtPath:destURL.path isDirectory:&isDirectory]) {
+      if (isDirectory) {
+        error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileWriteFileExistsError userInfo:@{NSLocalizedDescriptionKey: @"Download destination is a directory"}];
+      } else {
+        [fm replaceItemAtURL:destURL withItemAtURL:location backupItemName:nil options:NSFileManagerItemReplacementUsingNewMetadataOnly resultingItemURL:nil error:&error];
+      }
+    } else {
+      [fm moveItemAtURL:location toURL:destURL error:&error];
+    }
     // There are no guarantees about how often URLSession:downloadTask:didWriteData: will fire,
     // so we read an authoritative number of bytes written here.
     _bytesWritten = @([fm attributesOfItemAtPath:_params.toFile error:nil].fileSize);
@@ -134,10 +142,6 @@
       responseBodyString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
     }
   }
-  if (error) {
-    NSLog(@"RNFS download: unable to move tempfile to destination. %@, %@", error, error.userInfo);
-  }
-
   // When numerous downloads are called the sessions are not always invalidated and cleared by iOS14.
   // This leads to error 28 – no space left on device so we manually flush and invalidate to free up space
   if(session != nil){
@@ -146,6 +150,7 @@
     }];
   }
 
+  if (error) return _params.errorCallback(error);
   return _params.completeCallback(_statusCode, _bytesWritten, httpResponse.allHeaderFields, responseBodyString);
 }
 
@@ -155,12 +160,12 @@
     NSLog(@"RNFS download: didCompleteWithError %@, %@", error, error.userInfo);
     if (error.code != NSURLErrorCancelled) {
       _resumeData = error.userInfo[NSURLSessionDownloadTaskResumeData];
-      if (_resumeData != nil) {
-        if (_params.resumableCallback) {
-            _params.resumableCallback();
-        }
+      if (_resumeData != nil && _params.resumableCallback) {
+        _params.resumableCallback();
       } else {
-          _params.errorCallback(error);
+        _resumeData = nil;
+        [session finishTasksAndInvalidate];
+        _params.errorCallback(error);
       }
     }
   }
