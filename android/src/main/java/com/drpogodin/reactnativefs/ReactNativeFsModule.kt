@@ -12,7 +12,6 @@ import android.os.StatFs
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Base64OutputStream
-import android.util.SparseArray
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
 import com.drpogodin.reactnativefs.DownloadParams.OnDownloadBegin
@@ -39,6 +38,7 @@ import java.io.RandomAccessFile
 import java.net.URL
 import java.security.MessageDigest
 import java.util.ArrayDeque
+import java.util.concurrent.ConcurrentHashMap
 
 // TODO: The compilation produces warning:
 //  Note: Some input files use or override a deprecated API.
@@ -46,8 +46,8 @@ import java.util.ArrayDeque
 // It should be taken care of later.
 class ReactNativeFsModule(reactContext: ReactApplicationContext) :
   NativeReactNativeFsSpec(reactContext) {
-    private val downloaders = SparseArray<Downloader>()
-    private val uploaders = SparseArray<Uploader>()
+    private val downloaders = ConcurrentHashMap<Int, Downloader>()
+    private val uploaders = ConcurrentHashMap<Int, Uploader>()
     private val pendingPickFilePromises = ArrayDeque<Promise>()
     private var pickFileLauncher: ActivityResultLauncher<Array<String>>? = null
     private fun getPickFileLauncher(): ActivityResultLauncher<Array<String>> {
@@ -243,6 +243,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             params.connectionTimeout = connectionTimeout
             params.onTaskCompleted = object : OnTaskCompleted {
                 override fun onTaskCompleted(res: DownloadResult?) {
+                    downloaders.remove(jobId)
                     if (res!!.exception == null) {
                         val infoMap = Arguments.createMap()
                         infoMap.putInt("jobId", jobId)
@@ -282,8 +283,13 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
                 }
             }
             val downloader = Downloader()
-            downloader.execute(params)
             downloaders.put(jobId, downloader)
+            try {
+                downloader.execute(params)
+            } catch (ex: Exception) {
+                downloaders.remove(jobId)
+                throw ex
+            }
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, options.getString("toFile"), ex)
@@ -715,6 +721,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             params.binaryStreamOnly = binaryStreamOnly
             params.onUploadComplete = object : UploadParams.OnUploadComplete {
                 override fun onUploadComplete(res: UploadResult) {
+                    uploaders.remove(jobId)
                     if (res.exception == null) {
                         val infoMap = Arguments.createMap()
                         infoMap.putInt("jobId", jobId)
@@ -750,8 +757,13 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
                 }
             }
             val uploader = Uploader()
-            uploader.execute(params)
             uploaders.put(jobId, uploader)
+            try {
+                uploader.execute(params)
+            } catch (ex: Exception) {
+                uploaders.remove(jobId)
+                throw ex
+            }
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, options.getString("toUrl"), ex)

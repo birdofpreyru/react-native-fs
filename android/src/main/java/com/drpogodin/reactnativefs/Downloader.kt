@@ -8,6 +8,7 @@ import java.io.BufferedReader
 import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.io.InputStream
+import java.io.IOException
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -58,10 +59,23 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
             val isRedirect = statusCode != HttpURLConnection.HTTP_OK &&
                     (statusCode == HttpURLConnection.HTTP_MOVED_PERM || statusCode == HttpURLConnection.HTTP_MOVED_TEMP || statusCode == 307 || statusCode == 308)
             if (isRedirect) {
-                val redirectURL = connection.getHeaderField("Location")
+                val location = connection.getHeaderField("Location") ?: throw IOException("Redirect has no Location header")
+                val redirectURL = URL(connection.url, location)
+                val previousURL = connection.url
                 connection.disconnect()
-                connection = URL(redirectURL).openConnection() as HttpURLConnection
-                connection.connectTimeout = 5000
+                connection = redirectURL.openConnection() as HttpURLConnection
+                if (redirectURL.protocol.equals(previousURL.protocol, ignoreCase = true) &&
+                    redirectURL.host.equals(previousURL.host, ignoreCase = true) &&
+                    redirectURL.port.let { if (it == -1) redirectURL.defaultPort else it } ==
+                    previousURL.port.let { if (it == -1) previousURL.defaultPort else it }) {
+                    val redirectHeaders = param.headers!!.keySetIterator()
+                    while (redirectHeaders.hasNextKey()) {
+                        val key = redirectHeaders.nextKey()
+                        connection.setRequestProperty(key, param.headers!!.getString(key))
+                    }
+                }
+                connection.connectTimeout = param.connectionTimeout
+                connection.readTimeout = param.readTimeout
                 connection.connect()
                 statusCode = connection.responseCode
                 lengthOfFile = getContentLength(connection)
@@ -127,16 +141,19 @@ class Downloader : AsyncTask<DownloadParams?, LongArray?, DownloadResult>() {
                 output.flush()
                 res.bytesWritten = total
             } else {
-                responseStream = BufferedInputStream(connection.errorStream)
-                responseStreamReader = BufferedReader(InputStreamReader(responseStream))
-                val stringBuilder = StringBuilder()
-                var line: String?
-                while (responseStreamReader.readLine().also { line = it } != null) {
-                    stringBuilder.append(line).append("\n")
+                val errorStream = connection.errorStream
+                if (errorStream != null) {
+                    responseStream = BufferedInputStream(errorStream)
+                    responseStreamReader = BufferedReader(InputStreamReader(responseStream))
+                    val stringBuilder = StringBuilder()
+                    var line: String?
+                    while (responseStreamReader.readLine().also { line = it } != null) {
+                        stringBuilder.append(line).append("\n")
+                    }
+                    res.body = stringBuilder.toString()
+                } else {
+                    res.body = ""
                 }
-                val response = stringBuilder.toString()
-
-                res!!.body = response
             }
             res.statusCode = statusCode
             res!!.headers = responseHeaders
