@@ -992,7 +992,11 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
         if (result) {
 
             NSData *imageData = UIImageJPEGRepresentation(result, compression );
-            [imageData writeToFile:destination atomically:YES];
+            NSError *error = nil;
+            if (!imageData || ![imageData writeToFile:destination options:NSDataWritingAtomic error:&error]) {
+              if (!error) error = [NSError errorWithDomain:@"RNFS" code:501 userInfo:@{NSLocalizedDescriptionKey: @"Failed to encode asset image"}];
+              return [[RNFSException fromError:error] reject:reject];
+            }
             resolve(destination);
 
         } else {
@@ -1020,10 +1024,6 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 // [PHAsset fetchAssetsWithALAssetURLs] is deprecated and not supported in Mac Catalyst
 # if !TARGET_OS_UIKITFORMAC && !TARGET_OS_OSX
   NSURL* url = [NSURL URLWithString:imageUri];
-  //unused?
-  //__block NSURL* videoURL = [NSURL URLWithString:destination];
-  __block NSError *error = nil;
-
   PHFetchResult *phAssetFetchResult = nil;
   if ([url.scheme isEqualToString:@"ph"]) {
       phAssetFetchResult = [PHAsset fetchAssetsWithLocalIdentifiers:@[[imageUri substringFromIndex: 5]] options:nil];
@@ -1032,47 +1032,28 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   }
 
   PHAsset *phAsset = [phAssetFetchResult firstObject];
+  if (!phAsset) {
+    return reject(@"ENOENT", @"Could not find the requested video asset", nil);
+  }
 
   PHVideoRequestOptions *options = [[PHVideoRequestOptions alloc] init];
   options.networkAccessAllowed = YES;
   options.version = PHVideoRequestOptionsVersionOriginal;
   options.deliveryMode = PHVideoRequestOptionsDeliveryModeAutomatic;
 
-  dispatch_group_t group = dispatch_group_create();
-  dispatch_group_enter(group);
-
   [[PHImageManager defaultManager] requestAVAssetForVideo:phAsset options:options resultHandler:^(AVAsset *asset, AVAudioMix *audioMix, NSDictionary *info) {
-
-    if ([asset isKindOfClass:[AVURLAsset class]]) {
-      NSURL *url = [(AVURLAsset *)asset URL];
-      NSLog(@"Final URL %@",url);
-      BOOL writeResult = false;
-
-      if (@available(iOS 9.0, *)) {
-          NSURL *destinationUrl = [NSURL fileURLWithPath:destination relativeToURL:nil];
-          writeResult = [[NSFileManager defaultManager] copyItemAtURL:url toURL:destinationUrl error:&error];
-      } else {
-          NSData *videoData = [NSData dataWithContentsOfURL:url];
-          writeResult = [videoData writeToFile:destination options:NSDataWritingAtomic error:&error];
-      }
-
-      if(writeResult) {
-        NSLog(@"video success");
-      }
-      else {
-        NSLog(@"video failure");
-      }
-      dispatch_group_leave(group);
+    NSError *error = info[PHImageErrorKey];
+    if (error) return [[RNFSException fromError:error] reject:reject];
+    if (![asset isKindOfClass:[AVURLAsset class]]) {
+      return reject(@"EUNSPECIFIED", @"The requested video asset has no file URL", nil);
     }
+    NSURL *source = [(AVURLAsset *)asset URL];
+    NSURL *target = [NSURL fileURLWithPath:destination];
+    if (![[NSFileManager defaultManager] copyItemAtURL:source toURL:target error:&error]) {
+      return [[RNFSException fromError:error] reject:reject];
+    }
+    resolve(destination);
   }];
-  dispatch_group_wait(group,  DISPATCH_TIME_FOREVER);
-
-  if (error) {
-    NSLog(@"RNFS: %@", error);
-    return [[RNFSException fromError:error] reject:reject];
-  }
-
-  return resolve(destination);
 # else
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"copyAssetsVideoIOS() is not supported for macOS"];
 # endif
