@@ -14,14 +14,15 @@ import android.util.Base64
 import android.util.Base64OutputStream
 import android.util.SparseArray
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
 import com.drpogodin.reactnativefs.DownloadParams.OnDownloadBegin
 import com.drpogodin.reactnativefs.DownloadParams.OnDownloadProgress
 import com.drpogodin.reactnativefs.DownloadParams.OnTaskCompleted
-import com.facebook.react.ReactActivity
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.module.annotations.ReactModule
 
 import com.facebook.react.bridge.ReactMethod
@@ -38,7 +39,7 @@ import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.net.URL
 import java.security.MessageDigest
-import java.util.ArrayDeque
+import java.util.UUID
 
 // TODO: The compilation produces warning:
 //  Note: Some input files use or override a deprecated API.
@@ -48,25 +49,20 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
   NativeReactNativeFsSpec(reactContext) {
     private val downloaders = SparseArray<Downloader>()
     private val uploaders = SparseArray<Uploader>()
-    private val pendingPickFilePromises = ArrayDeque<Promise>()
-    private var pickFileLauncher: ActivityResultLauncher<Array<String>>? = null
-    private fun getPickFileLauncher(): ActivityResultLauncher<Array<String>> {
-        if (pickFileLauncher == null) {
-            val registry = (reactApplicationContext.currentActivity as ReactActivity).activityResultRegistry
-            pickFileLauncher = registry.register<Array<String>, Uri?>(
-                    "RNFS_pickFile",
-                    OpenDocument()
-            ) { uri ->
-                val res = Arguments.createArray()
-                if (uri != null) res.pushString(uri.toString())
-                pendingPickFilePromises.pop().resolve(res)
+    private val pendingPickFiles = mutableMapOf<String, Pair<ActivityResultLauncher<Array<String>>, Promise>>()
+    @Volatile private var invalidated = false
+
+    override fun invalidate() {
+        invalidated = true
+        UiThreadUtil.runOnUiThread {
+            val pending = pendingPickFiles.values.toList()
+            pendingPickFiles.clear()
+            for ((launcher, promise) in pending) {
+                launcher.unregister()
+                promise.reject("RNFS", "File picker module has been invalidated")
             }
         }
-        return pickFileLauncher!!
-    }
-
-    protected fun finalize() {
-        if (pickFileLauncher != null) pickFileLauncher!!.unregister()
+        super.invalidate()
     }
 
     override fun getTypedExportedConstants(): Map<String, Any?> {
@@ -453,23 +449,33 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     }
 
     override fun pickFile(options: ReadableMap, promise: Promise) {
-        val mimeTypesArray = options.getArray("mimeTypes")
-        var mimeTypes = emptyArray<String>()
-        if (mimeTypesArray != null) {
-          for (i in 0 until mimeTypesArray.size()) {
-            val type = mimeTypesArray.getString(i)
-            if (type != null) mimeTypes += type
-          }
+        UiThreadUtil.runOnUiThread {
+            val key = "RNFS_pickFile_${UUID.randomUUID()}"
+            var launcher: ActivityResultLauncher<Array<String>>? = null
+            try {
+                if (invalidated) throw IllegalStateException("File picker module has been invalidated")
+                val owner = reactApplicationContext.currentActivity as? ActivityResultRegistryOwner
+                    ?: throw IllegalStateException("Current activity does not provide an activity result registry")
+                val values = options.getArray("mimeTypes")
+                val mimeTypes = ArrayList<String>(values?.size() ?: 0)
+                if (values != null) {
+                    for (i in 0 until values.size()) values.getString(i)?.let { mimeTypes.add(it) }
+                }
+                launcher = owner.activityResultRegistry.register<Array<String>, Uri?>(key, OpenDocument()) { uri ->
+                    val pending = pendingPickFiles.remove(key) ?: return@register
+                    pending.first.unregister()
+                    val result = Arguments.createArray()
+                    if (uri != null) result.pushString(uri.toString())
+                    pending.second.resolve(result)
+                }
+                pendingPickFiles[key] = Pair(launcher, promise)
+                launcher.launch(mimeTypes.toTypedArray())
+            } catch (ex: Exception) {
+                pendingPickFiles.remove(key)
+                launcher?.unregister()
+                reject(promise, null, ex)
+            }
         }
-
-        // Note: Here we assume that if a new pickFile() call is done prior to
-        // the previous one having been completed, effectively the new call with
-        // open a new file picker on top of the view stack (thus, on top of
-        // the one opened for the previous call), thus just keeping all pending
-        // promises in FILO stack we should be able to resolve them in the correct
-        // order.
-        pendingPickFilePromises.push(promise)
-        getPickFileLauncher().launch(mimeTypes)
     }
 
     override fun read(
