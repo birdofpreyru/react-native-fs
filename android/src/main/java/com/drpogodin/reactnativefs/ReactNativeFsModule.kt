@@ -1,7 +1,6 @@
 package com.drpogodin.reactnativefs
 
 import android.content.res.AssetManager
-import android.database.Cursor
 import android.media.MediaScannerConnection
 import android.media.MediaScannerConnection.MediaScannerConnectionClient
 import android.net.Uri
@@ -10,6 +9,8 @@ import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.provider.MediaStore
+import android.system.Os
+import android.system.OsConstants
 import android.util.Base64
 import android.util.Base64OutputStream
 import android.util.SparseArray
@@ -340,10 +341,10 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     }
 
     override fun getAllExternalFilesDirs(promise: Promise) {
-        val allExternalFilesDirs: Array<File> = this.reactApplicationContext.getExternalFilesDirs(null)
+        val allExternalFilesDirs = this.reactApplicationContext.getExternalFilesDirs(null)
         val fs = Arguments.createArray()
         for (f in allExternalFilesDirs) {
-          fs.pushString(f.absolutePath)
+          if (f != null) fs.pushString(f.absolutePath)
         }
         promise.resolve(fs)
     }
@@ -410,8 +411,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         try {
             val file = File(filepath)
             file.mkdirs()
-            val exists = file.exists()
-            if (!exists) throw Exception("Directory could not be created")
+            if (!file.isDirectory) throw IOException("Directory could not be created")
             promise.resolve(null)
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -427,8 +427,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
                     @Deprecated("Deprecated in Java")
                     override fun onPostExecute(ex: Exception?) {
                         if (ex == null) {
-                            inFile.delete()
-                            promise.resolve(true)
+                            if (inFile.delete()) promise.resolve(true)
+                            else reject(promise, filepath, IOException("Source file could not be deleted after copying"))
                         } else {
                             ex.printStackTrace()
                             reject(promise, filepath, ex)
@@ -479,13 +479,24 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             promise: Promise
     ) {
         try {
-            getInputStream(filepath).use { inputStream ->
+            val base64Content = getInputStream(filepath).use { inputStream ->
                 val buffer = ByteArray(length.toInt())
-                inputStream.skip(position.toInt().toLong())
-                val bytesRead = inputStream.read(buffer, 0, length.toInt())
-                val base64Content = Base64.encodeToString(buffer, 0, bytesRead, Base64.NO_WRAP)
-                promise.resolve(base64Content)
+                var remaining = position.toLong()
+                while (remaining > 0) {
+                    val skipped = inputStream.skip(remaining)
+                    if (skipped > 0) remaining -= skipped
+                    else if (inputStream.read() == -1) break
+                    else remaining--
+                }
+                var bytesRead = 0
+                while (bytesRead < buffer.size) {
+                    val count = inputStream.read(buffer, bytesRead, buffer.size - bytesRead)
+                    if (count == -1) break
+                    bytesRead += count
+                }
+                Base64.encodeToString(buffer, 0, bytesRead, Base64.NO_WRAP)
             }
+            promise.resolve(base64Content)
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filepath, ex)
@@ -496,7 +507,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         try {
             val file = File(directory)
             if (!file.exists()) throw Exception("Folder does not exist")
-            val files = file.listFiles()
+            val files = file.listFiles() ?: throw IOException("Directory could not be read")
             val fileMaps = Arguments.createArray()
 
             // TODO: Not sure, whether we should throw or avoid to throw if files are null?
@@ -549,16 +560,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
 
     override fun readFile(filepath: String, promise: Promise) {
         try {
-            getInputStream(filepath).use { inputStream ->
-                ByteArrayOutputStream().use { outputStream ->
-                    Base64OutputStream(outputStream, Base64.NO_WRAP).use { base64FilterStream ->
-                        inputStream.copyTo(base64FilterStream)
-                    }
-
-                    val base64Content = outputStream.toString()
-                    promise.resolve(base64Content)
-                }
-            }
+            promise.resolve(readStreamBase64(getInputStream(filepath)))
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filepath, ex)
@@ -566,37 +568,31 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     }
 
     override fun readFileAssets(filepath: String?, promise: Promise) {
-        var stream: InputStream? = null
         try {
-            // ensure isn't a directory
             val assetManager: AssetManager = reactApplicationContext.assets
-            stream = assetManager.open(filepath!!, 0)
-            val buffer = ByteArray(stream.available())
-            stream.read(buffer)
-            val base64Content = Base64.encodeToString(buffer, Base64.NO_WRAP)
-            promise.resolve(base64Content)
+            promise.resolve(readStreamBase64(assetManager.open(filepath!!, 0)))
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filepath, ex)
-        } finally {
-            stream?.close()
         }
     }
 
     override fun readFileRes(filename: String, promise: Promise) {
-        var stream: InputStream? = null
         try {
             val res = getResIdentifier(filename)
-            stream = reactApplicationContext.resources.openRawResource(res)
-            val buffer = ByteArray(stream.available())
-            stream.read(buffer)
-            val base64Content = Base64.encodeToString(buffer, Base64.NO_WRAP)
-            promise.resolve(base64Content)
+            promise.resolve(readStreamBase64(reactApplicationContext.resources.openRawResource(res)))
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filename, ex)
-        } finally {
-            stream?.close()
+        }
+    }
+
+    private fun readStreamBase64(stream: InputStream): String = stream.use { input ->
+        ByteArrayOutputStream().use { output ->
+            Base64OutputStream(output, Base64.NO_WRAP).use { encoded ->
+                input.copyTo(encoded)
+            }
+            output.toString(Charsets.US_ASCII.name())
         }
     }
 
@@ -628,7 +624,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         try {
             val file = File(filepath)
             if (!file.exists()) throw Exception("File does not exist")
-            file.setReadable(readable, ownerOnly)
+            if (!file.setReadable(readable, ownerOnly)) throw IOException("File permissions could not be changed")
             promise.resolve(true)
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -642,8 +638,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             val file = File(originalFilepath)
             if (!file.exists()) throw FileNotFoundException("File does not exist")
             val statMap = Arguments.createMap()
-            statMap.putInt("ctime", (file.lastModified() / 1000).toInt())
-            statMap.putInt("mtime", (file.lastModified() / 1000).toInt())
+            statMap.putDouble("ctime", file.lastModified().toDouble() / 1000)
+            statMap.putDouble("mtime", file.lastModified().toDouble() / 1000)
             statMap.putDouble("size", file.length().toDouble())
             statMap.putString("type", if (file.isDirectory) "1" else "0")
             statMap.putString("originalFilepath", originalFilepath)
@@ -667,11 +663,12 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     override fun touch(filepath: String, options: ReadableMap, promise: Promise) {
         try {
             val file = File(filepath)
-            val mtime = options.getDouble("mtime").toLong()
-            // TODO: setLastModified() returns "true" on success, "false" otherwise,
-            // thus instead of resolving with its result, we should throw if result is
-            // false.
-            promise.resolve(file.setLastModified(mtime))
+            if (options.hasKey("mtime") && !options.isNull("mtime")) {
+                if (!file.setLastModified(options.getDouble("mtime").toLong())) {
+                    throw IOException("File modification time could not be changed")
+                }
+            } else if (!file.exists()) throw FileNotFoundException("File does not exist")
+            promise.resolve(true)
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filepath, ex)
@@ -681,7 +678,6 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     override fun unlink(filepath: String, promise: Promise) {
         try {
             val file = File(filepath)
-            if (!file.exists()) throw Exception("File does not exist")
             deleteRecursive(file)
             promise.resolve(null)
         } catch (ex: Exception) {
@@ -807,25 +803,17 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     private open inner class CopyFileTask : AsyncTask<String?, Void?, Exception?>() {
         @Deprecated("Deprecated in Java")
         override fun doInBackground(vararg paths: String?): Exception? {
-            var `in`: InputStream? = null
-            var out: OutputStream? = null
             return try {
                 val filepath = paths[0]!!
                 val destPath = paths[1]!!
-                `in` = getInputStream(filepath)
-                out = getOutputStream(destPath, false)
-                val buffer = ByteArray(1024)
-                var length: Int
-                while (`in`.read(buffer).also { length = it } > 0) {
-                    out.write(buffer, 0, length)
-                    Thread.yield()
+                getInputStream(filepath).use { input ->
+                    getOutputStream(destPath, false).use { output ->
+                        input.copyTo(output)
+                    }
                 }
                 null
             } catch (ex: Exception) {
                 ex
-            } finally {
-                `in`?.close()
-                out?.close()
             }
         }
     }
@@ -843,34 +831,22 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
    * Copies given InputStream to the specified destination.
    */
   private fun copyInputStream(stream: InputStream, destination: String) {
-    var output: OutputStream? = null
-    try {
-      output = getOutputStream(destination, false)
-
-      // The modern Android just has a method for stream piping.
-      if (Build.VERSION.SDK_INT >= 33) stream.transferTo(output)
-
-      // For legacy systems we fallback to the original library implementation.
-      else {
-        val buffer = ByteArray(1024 * 10) // 10k buffer
-        var read: Int
-        while (stream.read(buffer).also { read = it } != -1) {
-          output.write(buffer, 0, read)
-        }
+    stream.use { input ->
+      getOutputStream(destination, false).use { output ->
+        if (Build.VERSION.SDK_INT >= 33) input.transferTo(output)
+        else input.copyTo(output, 1024 * 10)
       }
-    } finally {
-      stream.close()
-      output?.close()
     }
   }
 
     private fun deleteRecursive(fileOrDirectory: File) {
-        if (fileOrDirectory.isDirectory) {
-            for (child in fileOrDirectory.listFiles()) {
+        if (OsConstants.S_ISDIR(Os.lstat(fileOrDirectory.path).st_mode)) {
+            val children = fileOrDirectory.listFiles() ?: throw IOException("Directory could not be read")
+            for (child in children) {
                 deleteRecursive(child)
             }
         }
-        fileOrDirectory.delete()
+        if (!fileOrDirectory.delete()) throw IOException("File could not be deleted: $fileOrDirectory")
     }
 
     @Throws(IORejectionException::class)
@@ -907,11 +883,12 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         var originalFilepath = filepath
         if (uri.scheme == "content") {
             try {
-                val cursor: Cursor = reactApplicationContext.contentResolver.query(uri, null, null, null, null)!!
-                if (cursor.moveToFirst()) {
-                    originalFilepath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA))
+                reactApplicationContext.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val column = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
+                        if (column >= 0 && !cursor.isNull(column)) originalFilepath = cursor.getString(column)
+                    }
                 }
-                cursor.close()
             } catch (ignored: IllegalArgumentException) {
             }
         }
