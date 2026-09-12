@@ -1,8 +1,5 @@
 #import <Foundation/Foundation.h>
-
-#if !TARGET_OS_OSX
-#import <MobileCoreServices/MobileCoreServices.h>
-#endif
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 typedef void (^UploadCompleteCallback)(NSString*, NSURLResponse *);
 typedef void (^UploadErrorCallback)(NSError*);
