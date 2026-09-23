@@ -1101,15 +1101,13 @@ IAsyncAction ReactNativeFs::ProcessDownloadRequestAsync(
                 headersMap[to_string(header.Key())] = to_string(header.Value());
             }
 
-            emitDownloadBegin(
-              JSValueObject{
-                { "jobId", jobId },
-                { "statusCode", (int)response.StatusCode() },
-                { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
-                  ? JSValue(contentLength.Value())
-                  : JSValue{nullptr} },
-                { "headers", std::move(headersMap) },
-            });
+            ReactNativeFsSpec_DownloadBeginCallbackResultT begin;
+            begin.jobId = jobId;
+            begin.statusCode = (int)response.StatusCode();
+            begin.contentLength = contentLength && contentLength.Type() == PropertyType::UInt64
+              ? static_cast<double>(contentLength.Value()) : -1;
+            begin.headers = JSValue(std::move(headersMap));
+            onDownloadBegin(std::move(begin));
         }
 
         uint64_t totalRead{ 0 };
@@ -1143,42 +1141,33 @@ IAsyncAction ReactNativeFs::ProcessDownloadRequestAsync(
             co_await outputStream.WriteAsync(readBuffer);
             totalRead += read;
 
+            auto emitProgress = [&]() {
+                ReactNativeFsSpec_DownloadProgressCallbackResultT progress;
+                progress.jobId = jobId;
+                progress.contentLength = contentLength && contentLength.Type() == PropertyType::UInt64
+                  ? static_cast<double>(contentLength.Value()) : -1;
+                progress.bytesWritten = static_cast<double>(totalRead);
+                onDownloadProgress(progress);
+            };
+
             if (progressInterval > 0)
             {
                 currentProgressTime = winrt::clock::now().time_since_epoch().count() / 10000;
                 if(currentProgressTime - initialProgressTime >= progressInterval)
                 {
-                    m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
-                        JSValueObject{
-                            { "jobId", jobId },
-                            { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
-                              ? JSValue(contentLength.Value()) : JSValue{nullptr} },
-                            { "bytesWritten", totalRead },
-                        });
+                    emitProgress();
                     initialProgressTime = winrt::clock::now().time_since_epoch().count() / 10000;
                 }
             }
             else if (progressDivider <= 0)
             {
-                m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
-                    JSValueObject{
-                        { "jobId", jobId },
-                        { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
-                          ? JSValue(contentLength.Value()) : JSValue{nullptr} },
-                        { "bytesWritten", totalRead },
-                    });
+                emitProgress();
             }
             else
             {
                 if (totalRead * 100 / contentLengthForProgress >= progressDividerUnsigned ||
                     totalRead == contentLengthForProgress) {
-                    m_context.CallJSFunction(L"RCTDeviceEventEmitter", L"emit", L"DownloadProgress",
-                        JSValueObject{
-                            { "jobId", jobId },
-                            { "contentLength", contentLength && contentLength.Type() == PropertyType::UInt64
-                              ? JSValue(contentLength.Value()) : JSValue{nullptr} },
-                            { "bytesWritten", totalRead },
-                        });
+                    emitProgress();
                 }
             }
         }
