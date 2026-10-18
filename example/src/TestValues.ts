@@ -6,6 +6,7 @@ export const ÄÖÜ = 'öäü-';
 export const PATH = (...path: string[]) =>
   TemporaryDirectoryPath + SEPARATOR + ÄÖÜ + path.join(SEPARATOR + ÄÖÜ);
 export const CONTENT = 'GÖÖÐ\n';
+export const CONTENT_BASE64 = 'R8OWw5bDkAo=';
 export const CONTENT_UTF8 = '\x47\xC3\x96\xC3\x96\xC3\x90\x0A';
 export const DUMMY_CONTENT = 'Dummy content';
 

@@ -1,7 +1,7 @@
 import { appendFile, readFile, writeFile } from '@dr.pogodin/react-native-fs';
 import type { TestMethods } from '../TestTypes';
 import { Result } from '../TestUtils';
-import { CONTENT, CONTENT_UTF8, PATH } from '../TestValues';
+import { CONTENT, CONTENT_BASE64, CONTENT_UTF8, PATH } from '../TestValues';
 
 export const appendTests: TestMethods = {
   'appendFile() should append content to files': async () => {
@@ -22,12 +22,24 @@ export const appendTests: TestMethods = {
       }
 
       // prepare 2
-      await writeFile(file, CONTENT);
+      await writeFile(file, CONTENT_BASE64, 'base64');
 
       // execute 2
-      await appendFile(file, CONTENT);
+      await appendFile(file, CONTENT_BASE64, 'base64');
 
       // test 2
+      res = await readFile(file);
+      if (res !== `${CONTENT}${CONTENT}`) {
+        return Result.error('failed to append base64');
+      }
+
+      // prepare 3
+      await writeFile(file, CONTENT);
+
+      // execute 3
+      await appendFile(file, CONTENT);
+
+      // test 3
       res = await readFile(file);
       if (res !== `${CONTENT}${CONTENT}`) {
         return Result.error('failed to append text');
