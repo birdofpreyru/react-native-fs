@@ -67,10 +67,14 @@ async function readDirGeneric(
 
 export function appendFile(
   filepath: string,
-  contents: string,
+  contents: ArrayBuffer | string,
   encodingOrOptions?: EncodingOptions,
 ): Promise<void> {
-  const data = encode(contents, toEncoding(encodingOrOptions));
+  const data =
+    typeof contents === 'string'
+      ? encode(contents, toEncoding(encodingOrOptions))
+      : contents;
+
   return RNFS.appendFile(normalizeFilePath(filepath), data);
 }
 
@@ -392,11 +396,15 @@ export function uploadFiles(options: UploadFileOptionsT): {
 
 export function write(
   filepath: string,
-  contents: string,
+  contents: ArrayBuffer | string,
   position: number = -1,
   encodingOrOptions?: EncodingOptions,
 ): Promise<void> {
-  const data = encode(contents, toEncoding(encodingOrOptions));
+  const data =
+    typeof contents === 'string'
+      ? encode(contents, toEncoding(encodingOrOptions))
+      : contents;
+
   return RNFS.write(normalizeFilePath(filepath), data, position);
 }
 
@@ -407,10 +415,14 @@ type WriteFileOptionsT = {
 
 export function writeFile(
   path: string,
-  content: string,
+  content: ArrayBuffer | string,
   encodingOrOptions?: EncodingT | WriteFileOptionsT,
 ): Promise<void> {
-  const data = encode(content, toEncoding(encodingOrOptions));
+  const data =
+    typeof content === 'string'
+      ? encode(content, toEncoding(encodingOrOptions))
+      : content;
+
   return RNFS.writeFile(
     normalizeFilePath(path),
     data,

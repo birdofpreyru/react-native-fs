@@ -550,8 +550,9 @@ function appendFile(filepath: string, contents: string, encoding?: string): Prom
 
 Appends content to a file.
 - `filepath` &mdash; **string** &mdash; File path.
-- `contents` &mdash; **string** &mdash; The content to add.
-- `encoding` &mdash; [EncodingT] &mdash; Optional. Encoding.
+- `contents` &mdash; **ArrayBuffer** | **string** &mdash; The content to add.
+- `encoding` &mdash; [EncodingT] &mdash; Optional. Encoding. Ignored if `contents`
+  value is an **ArrayBuffer**.
 - Resolves once the operation has been completed.
 
 ### completeHandlerIOS()
@@ -1229,10 +1230,11 @@ function write(filepath: string, contents: string, position?: number, encoding?:
 Writes content to a file at the given random access position.
 
 - `filepath` &mdash; **string** &mdash; File path.
-- `contents` &mdash; **string** &mdash; Content to write.
+- `contents` &mdash; **ArrayBuffer** | **string** &mdash; Content to write.
 - `position` &mdash; **number** | **undefined** &mdash; Write position.
   If `undefined` or `-1` the contents is appended to the end of the file.
-- `encoding` &mdash; [EncodingT] &mdash; Write encoding.
+- `encoding` &mdash; [EncodingT] &mdash; Write encoding. Ignored if `contents`
+  value is an **ArrayBuffer**.
 - Resolves once the operation has been completed.
 
 ### writeFile()
@@ -1255,9 +1257,10 @@ into the corresponding UTF8 code (_i.e._ each source character will be
 turned into a group of 1-to-4 bytes in the written file).
 
 - `path` &mdash; **string** &mdash; File path.
-- `content` &mdash; **string** &mdash; Data to write into the file.
+- `content` &mdash; **ArrayBuffer** | **string** &mdash; Data to write into the file.
 - `encodingOrOptions` &mdash; [EncodingT] | [WriteFileOptionsT] &mdash; Data
-  encoding, or extra options.
+  encoding, or extra options. If it is encoding, and `content` value is
+  **ArrayBuffer**, then `encodingOrOptions` is ignored.
 - Resolves once completed.
 
 ## Types
