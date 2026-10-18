@@ -164,14 +164,12 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   }
 }
 
-- (void) writeFile:(NSString *)filepath
-                  b64:(NSString *)base64Content
-                  options:(JS::NativeReactNativeFs::FileOptionsT &)options
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
+- (void) writeFile:(nonnull NSString *)filepath
+              data:(nonnull NSMutableData *)data
+           options:(JS::NativeReactNativeFs::FileOptionsT &)options
+           resolve:(nonnull RCTPromiseResolveBlock)resolve
+            reject:(nonnull RCTPromiseRejectBlock)reject
 {
-  NSData *data = [[NSData alloc] initWithBase64EncodedString:base64Content options:NSDataBase64DecodingIgnoreUnknownCharacters];
-
   NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
 
   if (options.NSFileProtectionKey() != nil) {
@@ -187,10 +185,10 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   return resolve(nil);
 }
 
-- (void) appendFile:(NSString *)filepath
-                  b64:(NSString *)b64
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
+- (void) appendFile:(nonnull NSString *)filepath
+               data:(nonnull NSMutableData *)data
+            resolve:(nonnull RCTPromiseResolveBlock)resolve
+             reject:(nonnull RCTPromiseRejectBlock)reject
 {
   NSError *error = nil;
   NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
@@ -199,8 +197,6 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
-    NSData *data = [[NSData alloc] initWithBase64EncodedString:b64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
-
     NSFileManager *fM = [NSFileManager defaultManager];
 
     if (![fM fileExistsAtPath:filepath])
@@ -238,14 +234,12 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   }
 }
 
-- (void) write:(NSString *)filepath
-                  b64:(NSString *)b64
-                  position:(double)position
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
+- (void) write:(nonnull NSString *) filepath
+          data:(nonnull NSMutableData *)data
+      position:(double)position
+       resolve:(nonnull RCTPromiseResolveBlock)resolve
+        reject:(nonnull RCTPromiseRejectBlock)reject
 {
-  NSData *data = [[NSData alloc] initWithBase64EncodedString:b64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
-
   NSFileManager *fM = [NSFileManager defaultManager];
 
   if (![fM fileExistsAtPath:filepath])

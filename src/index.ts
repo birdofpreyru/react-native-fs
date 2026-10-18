@@ -70,8 +70,8 @@ export function appendFile(
   contents: string,
   encodingOrOptions?: EncodingOptions,
 ): Promise<void> {
-  const b64 = encode(contents, toEncoding(encodingOrOptions));
-  return RNFS.appendFile(normalizeFilePath(filepath), b64);
+  const data = encode(contents, toEncoding(encodingOrOptions));
+  return RNFS.appendFile(normalizeFilePath(filepath), data);
 }
 
 export function copyFile(
@@ -396,8 +396,8 @@ export function write(
   position: number = -1,
   encodingOrOptions?: EncodingOptions,
 ): Promise<void> {
-  const b64 = encode(contents, toEncoding(encodingOrOptions));
-  return RNFS.write(normalizeFilePath(filepath), b64, position);
+  const data = encode(contents, toEncoding(encodingOrOptions));
+  return RNFS.write(normalizeFilePath(filepath), data, position);
 }
 
 type WriteFileOptionsT = {
@@ -410,10 +410,10 @@ export function writeFile(
   content: string,
   encodingOrOptions?: EncodingT | WriteFileOptionsT,
 ): Promise<void> {
-  const b64 = encode(content, toEncoding(encodingOrOptions));
+  const data = encode(content, toEncoding(encodingOrOptions));
   return RNFS.writeFile(
     normalizeFilePath(path),
-    b64,
+    data,
     typeof encodingOrOptions === 'object' ? encodingOrOptions : {},
   );
 }

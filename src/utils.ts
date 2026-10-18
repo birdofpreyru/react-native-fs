@@ -61,30 +61,31 @@ export function decode(b64: string, encoding: EncodingT = 'utf8'): string {
 }
 
 /**
- * Encodes UTF16 (regular JS) `datum` string according to the given `encoding`
- * value:
- *  - For `utf8` (default) value of `encoding` it first encodes `datum` into
+ * Encodes UTF16 (regular JS) `datum` string into ArrayBuffer,
+ * according to the given `encoding` value:
+ *
+ *  - For `utf8` (default) value of `encoding` it encodes `datum` into
  *    UTF8 format (i.e. each original U+0000 to U+FFFF character turns into
- *    a sequence of 1-to-4 one-byte characters, thus from U+0000 to U+00FF),
- *    then further encodes that string in Base64 format, and returns the result.
- *  - For `ascii` value of `encoding` it just encodes `datum` in Base64 format,
- *    and returns the result. Note, it will throw if `datum` has any characters
- *    outside the U+0000 to U+00FF range.
- *  - For `base64` value of `encoding` it just returns `datum` as is,
- *    effectively without any encoding.
+ *    a sequence of 1-to-4 one-byte characters, thus from U+0000 to U+00FF).
+ *
+ *  - For `ascii` value of `encoding` it assumes each original character
+ *    is inside U+0000 to U+00FF range (thus corresponds to 1 byte of the result);
+ *    and it throws if `datum` has any characters outside the U+0000 to U+00FF
+ *    range.
+ *
+ *  - For `base64` value of `encoding` it decodes given Base64 string into
+ *    the underlying bytes.
+ *
  * @param datum Source string.
  * @param encoding Encoding to use. Defaults to `utf8`.
- * @return Base64-encoded string.
+ * @return Resulting array buffer.
  */
-export function encode(datum: string, encoding: EncodingT = 'utf8') {
-  if (encoding === 'base64') return datum;
-
-  let buffer;
-  if (encoding === 'utf8') buffer = Buffer.from(datum);
-  else if (encoding === 'ascii') buffer = Buffer.from(datum, 'latin1');
-  else throw Error(`Invalid encoding type "${encoding}"`);
-
-  return buffer.toString('base64');
+export function encode(
+  datum: string,
+  encoding: EncodingT = 'utf8',
+): ArrayBuffer {
+  const e = encoding === 'ascii' ? 'latin1' : encoding;
+  return Buffer.from(datum, e).buffer;
 }
 
 /**
