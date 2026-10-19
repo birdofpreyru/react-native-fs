@@ -20,14 +20,11 @@ import com.drpogodin.reactnativefs.DownloadParams.OnDownloadProgress
 import com.drpogodin.reactnativefs.DownloadParams.OnTaskCompleted
 import com.facebook.react.ReactActivity
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.ArrayBuffer
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.module.annotations.ReactModule
 
-import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.bridge.WritableMap
-import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -85,11 +82,10 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         return constants
     }
 
-    override fun appendFile(filepath: String, base64Content: String?, promise: Promise) {
+    override fun appendFile(filepath: String, data: ArrayBuffer, promise: Promise) {
         try {
             getOutputStream(filepath, true).use { outputStream ->
-                val bytes = Base64.decode(base64Content, Base64.DEFAULT)
-                outputStream.write(bytes)
+                outputStream.write(data.bytes.array())
             }
 
             // BEWARE: Must be outside the above block, to resolve only after the output stream
@@ -758,24 +754,17 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    // TODO: position arg should be double.
-    override fun write(
-            filepath: String,
-            base64Content: String?,
-            position: Double,
-            promise: Promise
-    ) {
+    override fun write(filepath: String, data: ArrayBuffer, position: Double, promise: Promise) {
         var outputStream: OutputStream? = null
         var file: RandomAccessFile? = null
         try {
-            val bytes = Base64.decode(base64Content, Base64.DEFAULT)
             if (position < 0) {
                 outputStream = getOutputStream(filepath, true)
-                outputStream.write(bytes)
+                outputStream.write(data.bytes.array())
             } else {
                 file = RandomAccessFile(filepath, "rw")
                 file.seek(position.toLong())
-                file.write(bytes)
+                file.write(data.bytes.array())
             }
             // BEWARE: Output stream must be closed before resolving the promise.
             outputStream?.close()
@@ -789,11 +778,15 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    override fun writeFile(filepath: String, base64Content: String?, options: ReadableMap?, promise: Promise) {
+    override fun writeFile(
+      filepath: String,
+      data: ArrayBuffer,
+      options: ReadableMap,
+      promise: Promise
+    ) {
         try {
             getOutputStream(filepath, false).use { outputStream ->
-                val bytes = Base64.decode(base64Content, Base64.DEFAULT)
-                outputStream.write(bytes)
+                outputStream.write(data.bytes.array())
             }
             // BEWARE: Must be outside the block above to be resolved after
             // the output stream is closed.
