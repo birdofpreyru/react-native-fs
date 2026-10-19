@@ -1420,7 +1420,7 @@ __metadata:
     "@babel/core": "npm:^7.29.7"
     "@babel/preset-env": "npm:^7.29.7"
     "@babel/runtime": "npm:^7.29.10"
-    "@dr.pogodin/react-native-static-server": "npm:^0.28.0"
+    "@dr.pogodin/react-native-static-server": "npm:^0.28.1"
     "@react-native-community/cli": "npm:20.2.0"
     "@react-native-community/cli-platform-android": "npm:20.2.0"
     "@react-native-community/cli-platform-ios": "npm:20.2.0"
@@ -1432,7 +1432,7 @@ __metadata:
     lodash: "npm:^4.18.1"
     react: "npm:19.3.0"
     react-native: "npm:0.88.0"
-    react-native-builder-bob: "npm:^0.43.1"
+    react-native-builder-bob: "npm:^0.43.2"
     react-native-monorepo-config: "npm:^0.4.0"
     react-native-safe-area-context: "npm:^5.10.1"
   languageName: unknown
@@ -1458,7 +1458,7 @@ __metadata:
     prettier: "npm:^3.9.10"
     react: "npm:19.3.0"
     react-native: "npm:0.88.0"
-    react-native-builder-bob: "npm:^0.43.1"
+    react-native-builder-bob: "npm:^0.43.2"
     typescript: "npm:^6.0.3"
   peerDependencies:
     react: "*"
@@ -1466,16 +1466,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dr.pogodin/react-native-static-server@npm:^0.28.0":
-  version: 0.28.0
-  resolution: "@dr.pogodin/react-native-static-server@npm:0.28.0"
+"@dr.pogodin/react-native-static-server@npm:^0.28.1":
+  version: 0.28.1
+  resolution: "@dr.pogodin/react-native-static-server@npm:0.28.1"
   dependencies:
     "@dr.pogodin/js-utils": "npm:^0.2.0"
   peerDependencies:
     "@dr.pogodin/react-native-fs": ">= 2.22.0"
     react: "*"
     react-native: "*"
-  checksum: 10c0/60dface0ab9dc3a09fb2c726d7aab2af75f515a75c7c4bbd636e0207b6431bb4ae147c63ddb763138dc6d31263a5171969b501e40a287ac9af775b6cf9a6ed84
+  checksum: 10c0/f9f93ab6fe338c0c921d8a8404cf80a2190b7c1d30285006cda9b49d04261ea82cf25aa91c31999496fa9557de3b018c3c227fcdf7007bbd0fdcd94997ebed1c
   languageName: node
   linkType: hard
 
@@ -6369,9 +6369,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-builder-bob@npm:^0.43.1":
-  version: 0.43.1
-  resolution: "react-native-builder-bob@npm:0.43.1"
+"react-native-builder-bob@npm:^0.43.2":
+  version: 0.43.2
+  resolution: "react-native-builder-bob@npm:0.43.2"
   dependencies:
     "@babel/core": "npm:^7.29.0"
     "@babel/plugin-transform-flow-strip-types": "npm:^7.27.1"
@@ -6397,7 +6397,7 @@ __metadata:
     yargs: "npm:^18.0.0"
   bin:
     bob: bin/bob
-  checksum: 10c0/aa7423d549f3dedac66950482dd4c62c6ad42f3a04c47ac23e37bb454103b5fc18fc1bd889f0156d64c3e786f47f6046705736cbe43af9a0563ae90f14f41792
+  checksum: 10c0/7eebf5db5a3d2407d70c0b44d45ede8ff1ca6077755d50123165dce8e8f7ad6792da8392487f33db20a42ef553f9fdf8446a6ef10d1eff8bcb8a3d53406177cd
   languageName: node
   linkType: hard
 
