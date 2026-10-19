@@ -257,9 +257,6 @@ struct ReactNativeFs
     REACT_EVENT(TimedEvent, L"TimedEventCpp");
     std::function<void(int)> TimedEvent;
 
-    REACT_EVENT(emitDownloadBegin, L"DownloadBegin");
-    std::function<void(JSValue)> emitDownloadBegin;
-
     REACT_METHOD(addListener);
     void addListener(std::string eventName) noexcept;
 
