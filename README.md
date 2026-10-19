@@ -143,6 +143,8 @@ Mac (Catalyst), and Windows platforms.
     - [DownloadProgressCallbackResultT] &mdash; The type of argument passed to
       the `progress` callback in [DownloadFileOptionsT].
     - [DownloadResultT] &mdash; Return type of [downloadFile()].
+    - [EncodingOptions] &mdash; [EncodingT] value provided directly,
+      or as a field of an option object.
     - [EncodingT] &mdash; Union of valid file encoding values.
     - [FileOptionsT] &mdash; Extra options for [copyFile()].
     - [FileProtectionKeysT] &mdash; The type of [FileProtectionKeys] object.
@@ -544,14 +546,19 @@ least, on Android this constant does not have a slash in the end; but on iOS
 ### appendFile()
 [appendFile()]: #appendfile
 ```ts
-function appendFile(filepath: string, contents: string, encoding?: string): Promise<void>;
+function appendFile(
+  filepath: string,
+  data: ArrayBuffer | string,
+  encodingOrOptions?: EncodingOptions,
+): Promise<void> {
 ```
-**VERIFIED:** Android, iOS, macOS, Windows.
+**VERIFIED:** Android, iOS.
 
 Appends content to a file.
 - `filepath` &mdash; **string** &mdash; File path.
-- `contents` &mdash; **string** &mdash; The content to add.
-- `encoding` &mdash; [EncodingT] &mdash; Optional. Encoding.
+- `data` &mdash; [ArrayBuffer] | **string** &mdash; Data to append.
+- `encodingOrOptions` &mdash; [EncodingOptions] &mdash; Optional. Encoding of
+  `data` string; ignored if `data` is an [ArrayBuffer].
 - Resolves once the operation has been completed.
 
 ### completeHandlerIOS()
@@ -1222,23 +1229,33 @@ in this library fork.
 ### write()
 [write()]: #write
 ```ts
-function write(filepath: string, contents: string, position?: number, encoding?: EncodingT): Promise<void>;
+export function write(
+  filepath: string,
+  data: ArrayBuffer | string,
+  position: number = -1,
+  encodingOrOptions?: EncodingOptions,
+): Promise<void> {
 ```
-**VERIFIED:** Android, iOS, macOS, Windows
+**VERIFIED:** Android, iOS.
 
 Writes content to a file at the given random access position.
 
 - `filepath` &mdash; **string** &mdash; File path.
-- `contents` &mdash; **string** &mdash; Content to write.
-- `position` &mdash; **number** | **undefined** &mdash; Write position.
+- `data` &mdash; [ArrayBuffer] | **string** &mdash; Data to write.
+- `position` &mdash; **number** | **undefined** &mdash; Optional. Write position.
   If `undefined` or `-1` the contents is appended to the end of the file.
-- `encoding` &mdash; [EncodingT] &mdash; Write encoding.
+- `encoding` &mdash; [EncodingT] &mdash; Optional. Encoding of `data` string;
+  ignored if `data` is an [ArrayBuffer].
 - Resolves once the operation has been completed.
 
 ### writeFile()
 [writeFile()]: #writefile
-```ts
-function writeFile(path: string, content: string, encodingOrOptions?: EncodingT | WriteFileOptionsT): Promise<void>
+```tsx
+export function writeFile(
+  path: string,
+  data: ArrayBuffer | string,
+  encodingOrOptions?: EncodingT | WriteFileOptionsT,
+): Promise<void> {
 ```
 **VERIFIED:** Android, iOS, macOS, Windows.
 
@@ -1255,9 +1272,10 @@ into the corresponding UTF8 code (_i.e._ each source character will be
 turned into a group of 1-to-4 bytes in the written file).
 
 - `path` &mdash; **string** &mdash; File path.
-- `content` &mdash; **string** &mdash; Data to write into the file.
-- `encodingOrOptions` &mdash; [EncodingT] | [WriteFileOptionsT] &mdash; Data
-  encoding, or extra options.
+- `data` &mdash; [ArrayBuffer] | **string** &mdash; Data to write into the file.
+- `encodingOrOptions` &mdash; [EncodingT] | [WriteFileOptionsT] &mdash; Encoding
+  of `data` string, or extra options. The encoding is ignored if `data` is
+  an [ArrayBuffer].
 - Resolves once completed.
 
 ## Types
@@ -1393,6 +1411,13 @@ Return type of [downloadFile()].
 - `headers` &mdash; [StringMapT] &mdash; The HTTP response headers from
   the server.
 - `body` &mdash; **string** &mdash; The HTTP response body only for not in the range 200-299 status codes
+
+### EncodingOptions
+[EncodingOptions]: #encodingoptions
+```tsx
+type EncodingOptions = EncodingT | { encoding?: EncodingT };
+```
+[EncodingT] value provided directly, or as a field of an option object.
 
 ### EncodingT
 [EncodingT]: #encodingt
@@ -1725,3 +1750,5 @@ The type of extra options argument of the [writeFile()] function.
   to use. Defaults `utf8`.
 - `NSFileProtectionKey` &mdash; **string** | **undefined** &mdash; Optional.
   iOS-only. See: https://developer.apple.com/documentation/foundation/nsfileprotectionkey
+
+[ArrayBuffer]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer

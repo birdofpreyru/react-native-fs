@@ -310,7 +310,7 @@ export interface Spec extends TurboModule {
   readonly onUploadProgress: CodegenTypes.EventEmitter<UploadProgressCallbackArgT>;
 
   // Common.
-  appendFile(path: string, b64: string): Promise<void>;
+  appendFile(path: string, data: ArrayBuffer): Promise<void>;
   copyFile(from: string, into: string, options: FileOptionsT): Promise<void>;
   downloadFile(options: NativeDownloadFileOptionsT): Promise<DownloadResultT>;
   exists(path: string): Promise<boolean>;
@@ -332,8 +332,13 @@ export interface Spec extends TurboModule {
   touch(path: string, options: TouchOptions): Promise<void>;
   unlink(path: string): Promise<void>;
   uploadFiles(options: NativeUploadFileOptionsT): Promise<UploadResultT>;
-  write(path: string, b64: string, position: number): Promise<void>;
-  writeFile(path: string, b64: string, options: FileOptionsT): Promise<void>;
+  write(path: string, data: ArrayBuffer, position: number): Promise<void>;
+
+  writeFile(
+    path: string,
+    data: ArrayBuffer,
+    options: FileOptionsT,
+  ): Promise<void>;
 
   // Android-specific.
   copyFileAssets(from: string, into: string): Promise<void>;

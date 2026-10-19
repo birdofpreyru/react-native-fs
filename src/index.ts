@@ -29,9 +29,9 @@ import {
   type EncodingT,
   type EncodingOptions,
   decode,
-  encode,
   normalizeFilePath,
   readFileGeneric,
+  toArrayBuffer,
   toEncoding,
 } from './utils';
 
@@ -67,11 +67,12 @@ async function readDirGeneric(
 
 export function appendFile(
   filepath: string,
-  contents: string,
+  data: ArrayBuffer | string,
   encodingOrOptions?: EncodingOptions,
 ): Promise<void> {
-  const b64 = encode(contents, toEncoding(encodingOrOptions));
-  return RNFS.appendFile(normalizeFilePath(filepath), b64);
+  const path = normalizeFilePath(filepath);
+  const bytes = toArrayBuffer(data, encodingOrOptions);
+  return RNFS.appendFile(path, bytes);
 }
 
 export function copyFile(
@@ -392,12 +393,13 @@ export function uploadFiles(options: UploadFileOptionsT): {
 
 export function write(
   filepath: string,
-  contents: string,
+  data: ArrayBuffer | string,
   position: number = -1,
   encodingOrOptions?: EncodingOptions,
 ): Promise<void> {
-  const b64 = encode(contents, toEncoding(encodingOrOptions));
-  return RNFS.write(normalizeFilePath(filepath), b64, position);
+  const path = normalizeFilePath(filepath);
+  const bytes = toArrayBuffer(data, toEncoding(encodingOrOptions));
+  return RNFS.write(path, bytes, position);
 }
 
 type WriteFileOptionsT = {
@@ -407,13 +409,14 @@ type WriteFileOptionsT = {
 
 export function writeFile(
   path: string,
-  content: string,
+  data: ArrayBuffer | string,
   encodingOrOptions?: EncodingT | WriteFileOptionsT,
 ): Promise<void> {
-  const b64 = encode(content, toEncoding(encodingOrOptions));
+  const p = normalizeFilePath(path);
+  const bytes = toArrayBuffer(data, toEncoding(encodingOrOptions));
   return RNFS.writeFile(
-    normalizeFilePath(path),
-    b64,
+    p,
+    bytes,
     typeof encodingOrOptions === 'object' ? encodingOrOptions : {},
   );
 }
