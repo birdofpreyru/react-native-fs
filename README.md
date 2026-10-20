@@ -963,9 +963,30 @@ crash the app.
 ### read()
 [read()]: #read
 ```ts
-function read(path: string, length = 0, position = 0, encodingOrOptions?: EncodingT | ReadFileOptionsT): Promise<string>;
+function read(
+  path: string,
+  length: number | undefined,
+  position: number | undefined,
+  encodingOrOptions: 'ArrayBuffer' | ReadFileOptionsT<'ArrayBuffer'>,
+): Promise<ArrayBuffer>;
+
+function read(
+  path: string,
+  length: number | undefined,
+  position: number | undefined,
+  encodingOrOptions?:
+    | Exclude<EncodingT, 'ArrayBuffer'>
+    | ReadFileOptionsT<Exclude<EncodingT, 'ArrayBuffer'>>,
+): Promise<string>;
+
+function read(
+  path: string,
+  length: number,
+  position: number,
+  encodingOrOptions?: EncodingT | ReadFileOptionsT,
+): Promise<ArrayBuffer | string>;
 ```
-**VERIFIED:** Android, iOS, macOS, Windows.
+**VERIFIED:** Android, iOS.
 
 Reads `length` bytes from the given `position` of a file.
 
@@ -989,7 +1010,8 @@ the given number of characters, if `utf8` is given.
 - `encodingOrOptions` &mdash; [EncodingT] | [ReadFileOptionsT] | **undefined**
   &mdash; Optional. The encoding to use, or additional read options (currently,
   the encoding is the only option anyway). Defaults `utf8`.
-- Resolves to **string** &mdash; the content read from file, transformed into
+- Resolves to [ArrayBuffer] or **string**, depending on the provided
+  `encodingOrOptions` value &mdash; the content read from file, transformed into
   the string according to the specified encoding.
 
 ### readdir()
@@ -1042,7 +1064,22 @@ the Android assets folder.
 ### readFile()
 [readFile()]: #readfile
 ```ts
-function readFile(path: string, encodingOrOptions?: EncodingT | ReadFileOptionsT): Promise<string>;
+function readFile(
+  path: string,
+  encodingOrOptions: 'ArrayBuffer' | ReadFileOptionsT<'ArrayBuffer'>,
+): Promise<ArrayBuffer>;
+
+function readFile(
+  path: string,
+  encodingOrOptions?:
+    | Exclude<EncodingT, 'ArrayBuffer'>
+    | ReadFileOptionsT<Exclude<EncodingT, 'ArrayBuffer'>>,
+): Promise<string>;
+
+function readFile(
+  path: string,
+  encodingOrOptions?: EncodingT | ReadFileOptionsT,
+): Promise<ArrayBuffer | string>;
 ```
 **VERIFIED:** Android, iOS, macOS, Windows.
 
@@ -1062,13 +1099,27 @@ of 1-to-4 bytes of the source file).
 - `path` &mdash; **string** &mdash; File path.
 - `encoding` &mdash; [EncodingT] | [ReadFileOptionsT] &mdash; Optional.
   File encoding, or extra options.
-- Resolves to **string** &mdash; the content read from the file, and transformed
-  according to the given encoding.
+- Resolves to [ArrayBuffer] or **string**, depending on the `encoding` value
+  &mdash; the content read from the file, and transformed according to
+  the given encoding.
 
 ### readFileAssets()
 [readFileAssets()]: #readfileassets
 ```ts
-function readFileAssets(path: string, encoding?: EncodingT | ReadFileOptionsT): Promise<string>;
+function readFileAssets(
+  path: string,
+  encodingOrOptions: EncodingOptions<'ArrayBuffer'>,
+): Promise<ArrayBuffer>;
+
+function readFileAssets(
+  path: string,
+  encodingOrOptions?: EncodingOptions<Exclude<EncodingT, 'ArrayBuffer'>>,
+): Promise<string>;
+
+function readFileAssets(
+  path: string,
+  encodingOrOptions?: EncodingOptions,
+): Promise<ArrayBuffer | string>;
 ```
 **VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
 
@@ -1080,12 +1131,26 @@ and return its contents. `encoding` can be one of `utf8` (default), `ascii`,
 - `encoding` &mdash; [EncodingT] | [ReadFileOptionsT] | **undefined** &mdash;
   Optional. Encoding, or extra options object, which currently only supports
   specifying the encoding.
-- Resolves to **string** &mdash; the asset content.
+- Resolves to [ArrayBuffer] or **string**, depending on the provided
+  `encodingOrOptions` value &mdash; the asset content.
 
 ### readFileRes
 [readFileRes()]: #readfileres
 ```ts
-function readFileRes(filename: string, encoding?: EncodingT): Promise<string>;
+function readFileRes(
+  filename: string,
+  encodingOrOptions: EncodingOptions<'ArrayBuffer'>,
+): Promise<ArrayBuffer>;
+
+function readFileRes(
+  filename: string,
+  encodingOrOptions?: EncodingOptions<Exclude<EncodingT, 'ArrayBuffer'>>,
+): Promise<string>;
+
+function readFileRes(
+  filename: string,
+  encodingOrOptions?: EncodingOptions,
+): Promise<ArrayBuffer | string>;
 ```
 **VERIFIED:** Android. **NOT SUPPORTED:** iOS, macOS, Windows.
 
@@ -1100,7 +1165,8 @@ I've overlooked something.
 
 - `filename` &mdash; **string** &mdash; Resouce file name.
 - `encoding` &mdash; [EncodingT] &mdash; Optional Encdoing.
-- Resolves to **string** &mdash; the resource content.
+- Resolves to [ArrayBuffer] or **string**, depending on the provided
+  `encodingOrOptions` value &mdash; the resource content.
 
 ### resumeDownload()
 [resumeDownload()]: #resumedownload
@@ -1415,14 +1481,15 @@ Return type of [downloadFile()].
 ### EncodingOptions
 [EncodingOptions]: #encodingoptions
 ```tsx
-type EncodingOptions = EncodingT | { encoding?: EncodingT };
+type EncodingOptions<T extends EncodingT = EncodingT> =
+  T | { encoding?: T };
 ```
 [EncodingT] value provided directly, or as a field of an option object.
 
 ### EncodingT
 [EncodingT]: #encodingt
 ```ts
-type EncodingT = 'ascii' | 'base64' | `utf8`;
+type EncodingT = 'ArrayBuffer' | 'ascii' | 'base64' | `utf8`;
 ```
 Union of valid file encoding values.
 

@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer';
 
+import RNFS from './NativeReactNativeFs';
+
 /**
  * If given `path` starts with `file://` schema, it returns the path without
  * that schema; otherwise returns given `path` as is.
@@ -13,10 +15,12 @@ export function normalizeFilePath(path: string): string {
 /** Valid encoding values to pass into Buffer methods. */
 type BufferEncodingT = 'base64' | 'latin1' | 'utf8';
 
-type ReadFileCommand = (path: string) => Promise<string>;
+type ReadFileCommand = (path: string) => Promise<number>;
 
-export type EncodingT = 'ascii' | 'base64' | 'utf8';
-export type EncodingOptions = EncodingT | { encoding?: EncodingT };
+export type EncodingT = 'ArrayBuffer' | 'ascii' | 'base64' | 'utf8';
+
+export type EncodingOptions<T extends EncodingT = EncodingT> =
+  T | { encoding?: T };
 
 /**
  * Reduces `encodingOrOptions` argument to encoding value,
@@ -33,35 +37,27 @@ export function toEncoding(encodingOrOptions?: EncodingOptions): EncodingT {
 }
 
 /**
- * Decodes Base64-encoded byte sequence `datum` into a string according to
- * the given `encoding` value:
- *  - For `utf8` (default) value of `encoding` it decodes `datum` into
- *    the original byte sequence, assumes it is UTF8 code, and further
- *    decodes it into UTF16 (regular JS) string; _i.e._ groups of 1-to-4
- *    original bytes turn into separate characters of the result string
- *    (from U+0000 to U+FFFF).
- *  - For `ascii` value of `encoding` it decodes `datum` into the original
- *    byte sequence, and returns it as UTF16 (regular JS) string without
- *    additional decoding (_i.e._ each original byte turns into a separate
- *    character of the result string, from U+0000 to U+00FF).
- *  - For `base64` value of `encoding` it just returns `datum` as is,
- *    effectively without any decoding.
- * @param datum Base64-encoded string.
- * @param encoding Encoding. Defaults `utf8`.
- * @return Result string.
+ * Decodes binary ArrayBuffer into a string, according to the given `encoding`
+ * value:
+ *
+ *  - For `utf8` (default) value of `encoding` it assumes `data` are an UTF8
+ *    encoded string, and they are decoded into UTF16 (regular JS) string
+ *    (i.e. groups of 1-to-4 original bytes turn into separate characters
+ *    of the result string, within the U+0000 to U+FFFF range).
+ *
+ *  - For `ascii` value of `encoding` each input byte becomes a separate
+ *    character of the result string, within the U+0000 to U+00FF range.
+ *
+ *  - For `base64` value of `encoding` the input bytes are encoded into Base64
+ *    encoded string.
  */
-export function decode(b64: string, encoding: EncodingT = 'utf8'): string {
-  if (encoding === 'base64') return b64;
-
-  const buffer = Buffer.from(b64, 'base64');
-
-  if (encoding === 'utf8') return buffer.toString('utf8');
-
-  // Note: `ascii` in Buffer API would also unset the highest bit in each byte,
-  // thus we really want to use `latin1` here.
-  if (encoding === 'ascii') return buffer.toString('latin1');
-
-  throw Error(`Invalid encoding type "${encoding}"`);
+export function decode(
+  data: ArrayBuffer,
+  encoding: EncodingT = 'utf8',
+): string {
+  if (encoding === 'ArrayBuffer') throw Error('Bad encoding');
+  const e: BufferEncodingT = encoding === 'ascii' ? 'latin1' : encoding;
+  return Buffer.from(data).toString(e);
 }
 
 /**
@@ -84,6 +80,7 @@ export function encode(
   data: string,
   encoding: EncodingT = 'utf8',
 ): ArrayBuffer {
+  if (encoding === 'ArrayBuffer') throw Error('Bad encoding');
   const e: BufferEncodingT = encoding === 'ascii' ? 'latin1' : encoding;
   return Buffer.from(data, e).buffer;
 }
@@ -95,9 +92,11 @@ export async function readFileGeneric(
   filepath: string,
   encodingOrOptions: EncodingOptions | undefined,
   command: ReadFileCommand,
-): Promise<string> {
-  const b64: string = await command(normalizeFilePath(filepath));
-  return decode(b64, toEncoding(encodingOrOptions));
+): Promise<ArrayBuffer | string> {
+  const id = await command(normalizeFilePath(filepath));
+  const bytes = RNFS.getArrayBuffer(id);
+  const encoding = toEncoding(encodingOrOptions);
+  return encoding === 'ArrayBuffer' ? bytes : decode(bytes, encoding);
 }
 
 export function toArrayBuffer(

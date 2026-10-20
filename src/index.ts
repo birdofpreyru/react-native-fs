@@ -28,11 +28,11 @@ import RNFS, {
 import {
   type EncodingT,
   type EncodingOptions,
-  decode,
   normalizeFilePath,
   readFileGeneric,
   toArrayBuffer,
   toEncoding,
+  decode,
 } from './utils';
 
 let lastJobId = 0;
@@ -238,9 +238,32 @@ export function pickFile(
   });
 }
 
-export type ReadFileOptionsT = {
-  encoding?: EncodingT;
+export type ReadFileOptionsT<E extends EncodingT = EncodingT> = {
+  encoding?: E;
 };
+
+export function read(
+  path: string,
+  length: number | undefined,
+  position: number | undefined,
+  encodingOrOptions: 'ArrayBuffer' | ReadFileOptionsT<'ArrayBuffer'>,
+): Promise<ArrayBuffer>;
+
+export function read(
+  path: string,
+  length: number | undefined,
+  position: number | undefined,
+  encodingOrOptions?:
+    | Exclude<EncodingT, 'ArrayBuffer'>
+    | ReadFileOptionsT<Exclude<EncodingT, 'ArrayBuffer'>>,
+): Promise<string>;
+
+export function read(
+  path: string,
+  length: number,
+  position: number,
+  encodingOrOptions?: EncodingT | ReadFileOptionsT,
+): Promise<ArrayBuffer | string>;
 
 export async function read(
   path: string,
@@ -249,15 +272,34 @@ export async function read(
   length: number = 0,
   position: number = 0,
   encodingOrOptions?: EncodingT | ReadFileOptionsT,
-): Promise<string> {
-  const b64 = await RNFS.read(normalizeFilePath(path), length, position);
-  return decode(b64, toEncoding(encodingOrOptions));
+): Promise<ArrayBuffer | string> {
+  const id = await RNFS.read(normalizeFilePath(path), length, position);
+  const bytes = RNFS.getArrayBuffer(id);
+  const encoding = toEncoding(encodingOrOptions);
+  return encoding === 'ArrayBuffer' ? bytes : decode(bytes, encoding);
 }
 
 export function readFile(
   path: string,
+  encodingOrOptions: 'ArrayBuffer' | ReadFileOptionsT<'ArrayBuffer'>,
+): Promise<ArrayBuffer>;
+
+export function readFile(
+  path: string,
+  encodingOrOptions?:
+    | Exclude<EncodingT, 'ArrayBuffer'>
+    | ReadFileOptionsT<Exclude<EncodingT, 'ArrayBuffer'>>,
+): Promise<string>;
+
+export function readFile(
+  path: string,
   encodingOrOptions?: EncodingT | ReadFileOptionsT,
-): Promise<string> {
+): Promise<ArrayBuffer | string>;
+
+export function readFile(
+  path: string,
+  encodingOrOptions?: EncodingT | ReadFileOptionsT,
+): Promise<ArrayBuffer | string> {
   return readFileGeneric(path, encodingOrOptions, RNFS.readFile);
 }
 
@@ -457,15 +499,45 @@ export async function readDirAssets(
 
 export function readFileAssets(
   path: string,
+  encodingOrOptions: EncodingOptions<'ArrayBuffer'>,
+): Promise<ArrayBuffer>;
+
+export function readFileAssets(
+  path: string,
+  encodingOrOptions?: EncodingOptions<Exclude<EncodingT, 'ArrayBuffer'>>,
+): Promise<string>;
+
+export function readFileAssets(
+  path: string,
   encodingOrOptions?: EncodingOptions,
-): Promise<string> {
+): Promise<ArrayBuffer | string>;
+
+export function readFileAssets(
+  path: string,
+  encodingOrOptions?: EncodingOptions,
+): Promise<ArrayBuffer | string> {
   return readFileGeneric(path, encodingOrOptions, RNFS.readFileAssets);
 }
 
 export function readFileRes(
   filename: string,
+  encodingOrOptions: EncodingOptions<'ArrayBuffer'>,
+): Promise<ArrayBuffer>;
+
+export function readFileRes(
+  filename: string,
+  encodingOrOptions?: EncodingOptions<Exclude<EncodingT, 'ArrayBuffer'>>,
+): Promise<string>;
+
+export function readFileRes(
+  filename: string,
   encodingOrOptions?: EncodingOptions,
-): Promise<string> {
+): Promise<ArrayBuffer | string>;
+
+export function readFileRes(
+  filename: string,
+  encodingOrOptions?: EncodingOptions,
+): Promise<ArrayBuffer | string> {
   return readFileGeneric(filename, encodingOrOptions, RNFS.readFileRes);
 }
 

@@ -309,6 +309,8 @@ export interface Spec extends TurboModule {
 
   readonly onUploadProgress: CodegenTypes.EventEmitter<UploadProgressCallbackArgT>;
 
+  getArrayBuffer(id: number): ArrayBuffer;
+
   // Common.
   appendFile(path: string, data: ArrayBuffer): Promise<void>;
   copyFile(from: string, into: string, options: FileOptionsT): Promise<void>;
@@ -320,8 +322,8 @@ export interface Spec extends TurboModule {
   moveFile(from: string, into: string, options: FileOptionsT): Promise<void>;
   pickFile(options: PickFileOptionsT): Promise<string[]>;
 
-  read(path: string, length: number, position: number): Promise<string>;
-  readFile(path: string): Promise<string>;
+  read(path: string, length: number, position: number): Promise<number>;
+  readFile(path: string): Promise<number>;
 
   // TODO: Not sure about the type of result here.
   readDir(path: string): Promise<NativeReadDirResItemT[]>;
@@ -346,8 +348,8 @@ export interface Spec extends TurboModule {
   existsAssets(path: string): Promise<boolean>;
   existsRes(path: string): Promise<boolean>;
   getAllExternalFilesDirs(): Promise<string[]>;
-  readFileAssets(path: string): Promise<string>;
-  readFileRes(path: string): Promise<string>;
+  readFileAssets(path: string): Promise<number>;
+  readFileRes(path: string): Promise<number>;
   readDirAssets(path: string): Promise<NativeReadDirResItemT[]>;
   scanFile(path: string): Promise<string | null>;
 

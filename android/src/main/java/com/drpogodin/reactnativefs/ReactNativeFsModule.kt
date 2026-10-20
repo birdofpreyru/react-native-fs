@@ -10,8 +10,6 @@ import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.provider.MediaStore
-import android.util.Base64
-import android.util.Base64OutputStream
 import android.util.SparseArray
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
@@ -43,6 +41,8 @@ import java.util.ArrayDeque
 // It should be taken care of later.
 class ReactNativeFsModule(reactContext: ReactApplicationContext) :
   NativeReactNativeFsSpec(reactContext) {
+    private var  nextDataKey: Int = 0
+    private val data = HashMap<Int, ArrayBuffer>()
     private val downloaders = SparseArray<Downloader>()
     private val uploaders = SparseArray<Uploader>()
     private val pendingPickFilePromises = ArrayDeque<Promise>()
@@ -80,6 +80,10 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         constants["ExternalDirectoryPath"] = this.reactApplicationContext.getExternalFilesDir(null)?.absolutePath
         constants["ExternalCachesDirectoryPath"] = this.reactApplicationContext.externalCacheDir?.absolutePath
         return constants
+    }
+
+    override fun getArrayBuffer(id: Double): ArrayBuffer? {
+      return data.remove(id.toInt())
     }
 
     override fun appendFile(filepath: String, data: ArrayBuffer, promise: Promise) {
@@ -306,7 +310,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
                     return
                 }
             } catch (ignored: Exception) {
-                //.. probably not a directory then
+                // ... probably not a directory then
             }
 
             // Attempt to open file (win = exists)
@@ -479,8 +483,12 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
                 val buffer = ByteArray(length.toInt())
                 inputStream.skip(position.toInt().toLong())
                 val bytesRead = inputStream.read(buffer, 0, length.toInt())
-                val base64Content = Base64.encodeToString(buffer, 0, bytesRead, Base64.NO_WRAP)
-                promise.resolve(base64Content)
+                val bytes = ArrayBuffer(bytesRead)
+                bytes.bytes.put(buffer, 0, bytesRead)
+
+                if (++nextDataKey == Int.MAX_VALUE) nextDataKey = 0
+                data[nextDataKey] = bytes
+                promise.resolve(nextDataKey)
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -530,11 +538,11 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
                     assetFileDescriptor.close()
                     isDirectory = false
                 } catch (ex: IOException) {
-                    //.. ah.. is a directory or a compressed file?
+                    // ... ah... is a directory or a compressed file?
                     isDirectory = !ex.message!!.contains("compressed")
                 }
                 fileMap.putInt("size", length)
-                fileMap.putString("type", if (isDirectory) "1" else "0") // if 0, probably a folder..
+                fileMap.putString("type", if (isDirectory) "1" else "0") // if 0, probably a folder...
                 fileMaps.pushMap(fileMap)
             }
             promise.resolve(fileMaps)
@@ -546,14 +554,12 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     override fun readFile(filepath: String, promise: Promise) {
         try {
             getInputStream(filepath).use { inputStream ->
-                ByteArrayOutputStream().use { outputStream ->
-                    Base64OutputStream(outputStream, Base64.NO_WRAP).use { base64FilterStream ->
-                        inputStream.copyTo(base64FilterStream)
-                    }
-
-                    val base64Content = outputStream.toString()
-                    promise.resolve(base64Content)
-                }
+                // TODO: I guess, we do unnecessary copying of bytes here.
+                val buffer = getInputStreamBytes(inputStream)
+                val bytes = ArrayBuffer.arrayBufferWithCopiedBytes(buffer)
+                if (++nextDataKey == Int.MAX_VALUE) nextDataKey = 0
+                data[nextDataKey] = bytes
+                promise.resolve(nextDataKey)
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -569,8 +575,11 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             stream = assetManager.open(filepath!!, 0)
             val buffer = ByteArray(stream.available())
             stream.read(buffer)
-            val base64Content = Base64.encodeToString(buffer, Base64.NO_WRAP)
-            promise.resolve(base64Content)
+
+            val bytes = ArrayBuffer.arrayBufferWithCopiedBytes(buffer)
+            if (++nextDataKey == Int.MAX_VALUE) nextDataKey = 0
+            data[nextDataKey] = bytes
+            promise.resolve(nextDataKey)
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filepath, ex)
@@ -586,8 +595,11 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             stream = reactApplicationContext.resources.openRawResource(res)
             val buffer = ByteArray(stream.available())
             stream.read(buffer)
-            val base64Content = Base64.encodeToString(buffer, Base64.NO_WRAP)
-            promise.resolve(base64Content)
+
+            val bytes = ArrayBuffer.arrayBufferWithCopiedBytes(buffer)
+            if (++nextDataKey == Int.MAX_VALUE) nextDataKey = 0
+            data[nextDataKey] = bytes
+            promise.resolve(nextDataKey)
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filename, ex)
@@ -843,7 +855,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
       // The modern Android just has a method for stream piping.
       if (Build.VERSION.SDK_INT >= 33) stream.transferTo(output)
 
-      // For legacy systems we fallback to the original library implementation.
+      // For legacy systems we fall back to the original library implementation.
       else {
         val buffer = ByteArray(1024 * 10) // 10k buffer
         var read: Int
@@ -959,6 +971,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     companion object {
         const val NAME = NativeReactNativeFsSpec.NAME
 
+        // TODO: Optimize, make it return ArrayBuffer rather than ByteArray.
         @Throws(IOException::class)
         private fun getInputStreamBytes(inputStream: InputStream): ByteArray {
             var bytesResult: ByteArray
