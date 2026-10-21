@@ -32,6 +32,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.net.URL
+import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.util.ArrayDeque
 
@@ -41,7 +42,7 @@ import java.util.ArrayDeque
 // It should be taken care of later.
 class ReactNativeFsModule(reactContext: ReactApplicationContext) :
   NativeReactNativeFsSpec(reactContext) {
-    private var  nextDataKey: Int = 0
+    private var lastDataKey: Int = 0
     private val data = HashMap<Int, ArrayBuffer>()
     private val downloaders = SparseArray<Downloader>()
     private val uploaders = SparseArray<Uploader>()
@@ -88,8 +89,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
 
     override fun appendFile(filepath: String, data: ArrayBuffer, promise: Promise) {
         try {
-            getOutputStream(filepath, true).use { outputStream ->
-                outputStream.write(data.bytes.array(), data.bytes.arrayOffset(), data.size)
+            getOutputStream(filepath, true).use { output ->
+              writeArrayBuffer(data, output)
             }
 
             // BEWARE: Must be outside the above block, to resolve only after the output stream
@@ -472,6 +473,16 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         getPickFileLauncher().launch(mimeTypes)
     }
 
+    /**
+     * Adds given `data` buffer to `this.data` map, under the next available data key,
+     * and returns that key.
+     */
+    fun stashData(data: ArrayBuffer): Int {
+      if (++lastDataKey == Int.MAX_VALUE) lastDataKey = 0
+      this.data[lastDataKey] = data
+      return lastDataKey
+    }
+
     override fun read(
             filepath: String,
             length: Double,
@@ -483,12 +494,9 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
                 val buffer = ByteArray(length.toInt())
                 inputStream.skip(position.toInt().toLong())
                 val bytesRead = inputStream.read(buffer, 0, length.toInt())
-                val bytes = ArrayBuffer(bytesRead)
-                bytes.bytes.put(buffer, 0, bytesRead)
-
-                if (++nextDataKey == Int.MAX_VALUE) nextDataKey = 0
-                data[nextDataKey] = bytes
-                promise.resolve(nextDataKey)
+                val bytes = ByteBuffer.wrap(buffer, 0, bytesRead)
+                val data = ArrayBuffer.arrayBufferWithCopiedBytes(bytes)
+                promise.resolve(stashData(data))
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -553,13 +561,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
 
     override fun readFile(filepath: String, promise: Promise) {
         try {
-            getInputStream(filepath).use { inputStream ->
-                // TODO: I guess, we do unnecessary copying of bytes here.
-                val buffer = getInputStreamBytes(inputStream)
-                val bytes = ArrayBuffer.arrayBufferWithCopiedBytes(buffer)
-                if (++nextDataKey == Int.MAX_VALUE) nextDataKey = 0
-                data[nextDataKey] = bytes
-                promise.resolve(nextDataKey)
+            getInputStream(filepath).use { input ->
+              promise.resolve(stashData(getInputStreamBytes(input)))
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -573,13 +576,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
             // ensure isn't a directory
             val assetManager: AssetManager = reactApplicationContext.assets
             stream = assetManager.open(filepath!!, 0)
-            val buffer = ByteArray(stream.available())
-            stream.read(buffer)
-
-            val bytes = ArrayBuffer.arrayBufferWithCopiedBytes(buffer)
-            if (++nextDataKey == Int.MAX_VALUE) nextDataKey = 0
-            data[nextDataKey] = bytes
-            promise.resolve(nextDataKey)
+            promise.resolve(stashData(getInputStreamBytes(stream)))
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filepath, ex)
@@ -593,13 +590,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         try {
             val res = getResIdentifier(filename)
             stream = reactApplicationContext.resources.openRawResource(res)
-            val buffer = ByteArray(stream.available())
-            stream.read(buffer)
-
-            val bytes = ArrayBuffer.arrayBufferWithCopiedBytes(buffer)
-            if (++nextDataKey == Int.MAX_VALUE) nextDataKey = 0
-            data[nextDataKey] = bytes
-            promise.resolve(nextDataKey)
+            promise.resolve(stashData(getInputStreamBytes(stream)))
         } catch (ex: Exception) {
             ex.printStackTrace()
             reject(promise, filename, ex)
@@ -772,7 +763,7 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
         try {
             if (position < 0) {
                 outputStream = getOutputStream(filepath, true)
-                outputStream.write(data.bytes.array(), data.bytes.arrayOffset(), data.size)
+                writeArrayBuffer(data, outputStream)
             } else {
                 file = RandomAccessFile(filepath, "rw")
                 file.seek(position.toLong())
@@ -797,8 +788,8 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
       promise: Promise
     ) {
         try {
-            getOutputStream(filepath, false).use { outputStream ->
-                outputStream.write(data.bytes.array(), data.bytes.arrayOffset(), data.size)
+            getOutputStream(filepath, false).use { output ->
+              writeArrayBuffer(data, output)
             }
             // BEWARE: Must be outside the block above to be resolved after
             // the output stream is closed.
@@ -971,20 +962,30 @@ class ReactNativeFsModule(reactContext: ReactApplicationContext) :
     companion object {
         const val NAME = NativeReactNativeFsSpec.NAME
 
-        // TODO: Optimize, make it return ArrayBuffer rather than ByteArray.
+        /**
+         * Reads all data from the given `inputStream` into a new ArrayBuffer.
+         */
         @Throws(IOException::class)
-        private fun getInputStreamBytes(inputStream: InputStream): ByteArray {
-            var bytesResult: ByteArray
-            val bufferSize = 1024
-            val buffer = ByteArray(bufferSize)
-            ByteArrayOutputStream().use { byteBuffer ->
-                var len: Int
-                while (inputStream.read(buffer).also { len = it } != -1) {
-                    byteBuffer.write(buffer, 0, len)
-                }
-                bytesResult = byteBuffer.toByteArray()
+        private fun getInputStreamBytes(inputStream: InputStream): ArrayBuffer {
+          var bytes: ByteArray
+          if (Build.VERSION.SDK_INT >= 33) bytes = inputStream.readAllBytes()
+          else {
+            val buffer = ByteArray(1024)
+            ByteArrayOutputStream().use { output ->
+              var len: Int
+              while (inputStream.read(buffer).also { len = it } != -1)
+                output.write(buffer, 0, len)
+              bytes = output.toByteArray()
             }
-            return bytesResult
+          }
+          return ArrayBuffer.arrayBufferWithCopiedBytes(ByteBuffer.wrap(bytes))
+        }
+
+        /**
+         * Writes given ArrayBuffer `data` into the output `stream`.
+         */
+        private fun writeArrayBuffer(data: ArrayBuffer, stream: OutputStream) {
+          stream.write(data.bytes.array(), data.bytes.arrayOffset(), data.size)
         }
     }
 }

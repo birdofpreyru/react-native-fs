@@ -251,8 +251,8 @@ export function read(
 
 export function read(
   path: string,
-  length: number | undefined,
-  position: number | undefined,
+  length?: number | undefined,
+  position?: number | undefined,
   encodingOrOptions?:
     | Exclude<EncodingT, 'ArrayBuffer'>
     | ReadFileOptionsT<Exclude<EncodingT, 'ArrayBuffer'>>,
@@ -260,8 +260,8 @@ export function read(
 
 export function read(
   path: string,
-  length: number,
-  position: number,
+  length?: number,
+  position?: number,
   encodingOrOptions?: EncodingT | ReadFileOptionsT,
 ): Promise<ArrayBuffer | string>;
 
