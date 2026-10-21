@@ -21,7 +21,11 @@
 #import "RNFSBackgroundDownloads.h"
 #import "RNFSException.h"
 
-@implementation ReactNativeFs
+@implementation ReactNativeFs {
+  int lastDataKey;
+  NSMutableDictionary<NSNumber*,NSMutableData*> *data;
+  NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
+}
 
 // The prefix of "Bookmark URLs".
 // See https://developer.apple.com/documentation/foundation/nsurl#1663783
@@ -31,19 +35,19 @@
 // and pass the resulting "Bookmark URLs" string around.
 static NSString *BOOKMARK = @"bookmark://";
 
-NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
-
 - (id) init
 {
-    if (self = [super init]) {
-        pendingPickFilePromises = [NSMutableDictionary dictionaryWithCapacity:1];
-    }
-    return self;
+  if (self = [super init]) {
+    lastDataKey = 0;
+    data = [NSMutableDictionary dictionaryWithCapacity:1];
+    pendingPickFilePromises = [NSMutableDictionary dictionaryWithCapacity:1];
+  }
+  return self;
 }
 
 - (void) readDir:(NSString *)dirPath
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
+         resolve:(RCTPromiseResolveBlock)resolve
+          reject:(RCTPromiseRejectBlock)reject
 {
   NSError *error = nil;
   NSURL *dirUrl = [ReactNativeFs pathToUrl:dirPath error:&error];
@@ -103,8 +107,8 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 }
 
 - (void) exists:(NSString *)filepath
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(__unused RCTPromiseRejectBlock)reject
+        resolve:(RCTPromiseResolveBlock)resolve
+         reject:(__unused RCTPromiseRejectBlock)reject
 {
   NSError *error = nil;
   NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
@@ -122,8 +126,8 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
 }
 
 - (void) stat:(NSString *)filepath
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
+      resolve:(RCTPromiseResolveBlock)resolve
+       reject:(RCTPromiseRejectBlock)reject
 {
   NSError *error = nil;
   NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
@@ -146,16 +150,16 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
     if (size == nil) size = @64;
 
     attributes = @{
-                   @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSURLCreationDateKey]],
-                   @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSURLContentModificationDateKey]],
-                   @"size": size,
-                   @"type": [attributes objectForKey:NSURLFileResourceTypeKey],
+      @"ctime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSURLCreationDateKey]],
+      @"mtime": [self dateToTimeIntervalNumber:(NSDate *)[attributes objectForKey:NSURLContentModificationDateKey]],
+      @"size": size,
+      @"type": [attributes objectForKey:NSURLFileResourceTypeKey],
 
-                   // TODO: So far I haven't found how to get POSIX permissions of a resource from NSURL object.
-                   // @"mode": @([[NSString stringWithFormat:@"%ld", (long)[(NSNumber *)[attributes objectForKey:NSFilePosixPermissions] integerValue]] integerValue]),
+      // TODO: So far I haven't found how to get POSIX permissions of a resource from NSURL object.
+      // @"mode": @([[NSString stringWithFormat:@"%ld", (long)[(NSNumber *)[attributes objectForKey:NSFilePosixPermissions] integerValue]] integerValue]),
 
-                   @"originalFilepath": @"NOT_SUPPORTED_ON_IOS"
-                   };
+      @"originalFilepath": @"NOT_SUPPORTED_ON_IOS"
+    };
 
     resolve(attributes);
   }
@@ -164,14 +168,12 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   }
 }
 
-- (void) writeFile:(NSString *)filepath
-                  b64:(NSString *)base64Content
-                  options:(JS::NativeReactNativeFs::FileOptionsT &)options
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
+- (void)writeFile:(nonnull NSString *)filepath
+             data:(nonnull NSMutableData *)data
+          options:(JS::NativeReactNativeFs::FileOptionsT &)options
+          resolve:(nonnull RCTPromiseResolveBlock)resolve
+           reject:(nonnull RCTPromiseRejectBlock)reject
 {
-  NSData *data = [[NSData alloc] initWithBase64EncodedString:base64Content options:NSDataBase64DecodingIgnoreUnknownCharacters];
-
   NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
 
   if (options.NSFileProtectionKey() != nil) {
@@ -187,10 +189,10 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   return resolve(nil);
 }
 
-- (void) appendFile:(NSString *)filepath
-                  b64:(NSString *)b64
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
+- (void)appendFile:(nonnull NSString *)filepath
+              data:(nonnull NSMutableData *)data
+           resolve:(nonnull RCTPromiseResolveBlock)resolve
+            reject:(nonnull RCTPromiseRejectBlock)reject
 {
   NSError *error = nil;
   NSURL *url = [ReactNativeFs pathToUrl:filepath error:&error];
@@ -199,8 +201,6 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   BOOL allowed = [url startAccessingSecurityScopedResource];
 
   @try {
-    NSData *data = [[NSData alloc] initWithBase64EncodedString:b64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
-
     NSFileManager *fM = [NSFileManager defaultManager];
 
     if (![fM fileExistsAtPath:filepath])
@@ -238,14 +238,12 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
   }
 }
 
-- (void) write:(NSString *)filepath
-                  b64:(NSString *)b64
-                  position:(double)position
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject
+- (void)write:(nonnull NSString *)filepath
+         data:(nonnull NSMutableData *)data
+     position:(double)position
+      resolve:(nonnull RCTPromiseResolveBlock)resolve
+       reject:(nonnull RCTPromiseRejectBlock)reject
 {
-  NSData *data = [[NSData alloc] initWithBase64EncodedString:b64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
-
   NSFileManager *fM = [NSFileManager defaultManager];
 
   if (![fM fileExistsAtPath:filepath])
@@ -363,9 +361,7 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
     }
 
     NSData *content = [[NSFileManager defaultManager] contentsAtPath:filepath];
-    NSString *base64Content = [content base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
-
-    resolve(base64Content);
+    resolve([self stashData:content]);
   }
   @finally {
     if (allowed) [url stopAccessingSecurityScopedResource];
@@ -417,9 +413,7 @@ NSMutableDictionary<NSValue*,NSArray*> *pendingPickFilePromises;
         content = [file readDataToEndOfFile];
     }
 
-    NSString *base64Content = [content base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithLineFeed];
-
-    resolve(base64Content);
+    resolve([self stashData:content]);
   }
   @finally {
     if (allowed) [url stopAccessingSecurityScopedResource];
@@ -1319,6 +1313,22 @@ didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls
 # else
   [[RNFSException NOT_IMPLEMENTED] reject:reject details:@"pickFile()"];
 # endif
+}
+
+- (nonnull NSMutableData *)getArrayBuffer:(double)id
+{
+  NSNumber *key = @(id);
+  NSMutableData *res = data[key];
+  [data removeObjectForKey:key];
+  return res;
+}
+
+- (NSNumber*) stashData:(nonnull NSData*)data
+{
+  if (++lastDataKey == INT_MAX) lastDataKey = 0;
+  NSNumber *key = @(lastDataKey);
+  self->data[key] = [NSMutableData dataWithData:data];
+  return key;
 }
 
 /**
